@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  thorvg_bounds_iterator.h                                              */
+/*  translation_server.compat.inc                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THORVG_BOUNDS_ITERATOR_H
-#define THORVG_BOUNDS_ITERATOR_H
+#ifndef DISABLE_DEPRECATED
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
+String TranslationServer::_standardize_locale_bind_compat_98972(const String &p_locale) const {
+	return standardize_locale(p_locale, false);
+}
 
-#include <godot_cpp/core/mutex_lock.hpp>
-#include <godot_cpp/godot.hpp>
+void TranslationServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("standardize_locale", "locale"), &TranslationServer::_standardize_locale_bind_compat_98972);
+}
 
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
-#include "core/typedefs.h"
-
-#include "modules/modules_enabled.gen.h" // For svg.
-#endif
-
-#ifdef MODULE_SVG_ENABLED
-
-#include <thorvg.h>
-
-void tvg_get_bounds(tvg::Picture *p_picture, float &r_min_x, float &r_min_y, float &r_max_x, float &r_max_y);
-
-#endif // MODULE_SVG_ENABLED
-
-#endif // THORVG_BOUNDS_ITERATOR_H
+#endif // DISABLE_DEPRECATED

@@ -3472,6 +3472,14 @@ void EditorInspector::update_tree() {
 
 		editors.append_array(late_editors);
 
+		const Node *node = Object::cast_to<Node>(object);
+
+		Vector<SceneState::PackState> sstack;
+		if (node != nullptr) {
+			const Node *es = EditorNode::get_singleton()->get_edited_scene();
+			sstack = PropertyUtils::get_node_states_stack(node, es);
+		}
+
 		for (int i = 0; i < editors.size(); i++) {
 			EditorProperty *ep = Object::cast_to<EditorProperty>(editors[i].property_editor);
 			const Vector<String> &properties = editors[i].properties;
@@ -3525,7 +3533,15 @@ void EditorInspector::update_tree() {
 				ep->set_checked(checked);
 				ep->set_keying(keying);
 				ep->set_read_only(property_read_only || all_read_only);
-				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
+				if (p.name.begins_with("metadata/")) {
+					Variant _default = Variant();
+					if (node != nullptr) {
+						_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
+					}
+					ep->set_deletable(_default == Variant());
+				} else {
+					ep->set_deletable(deletable_properties);
+				}
 			}
 
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
@@ -3648,8 +3664,6 @@ void EditorInspector::update_tree() {
 		for (List<EditorInspectorSection *>::Element *I = sections.back(); I; I = I->prev()) {
 			EditorInspectorSection *section = I->get();
 			if (section->get_vbox()->get_child_count() == 0) {
-				I = I->prev();
-
 				sections.erase(section);
 				vbox_per_path[main_vbox].erase(section->get_section());
 				memdelete(section);

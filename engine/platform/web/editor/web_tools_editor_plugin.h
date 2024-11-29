@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  thorvg_bounds_iterator.h                                              */
+/*  web_tools_editor_plugin.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THORVG_BOUNDS_ITERATOR_H
-#define THORVG_BOUNDS_ITERATOR_H
+#ifndef WEB_TOOLS_EDITOR_PLUGIN_H
+#define WEB_TOOLS_EDITOR_PLUGIN_H
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
+#include "core/io/zip_io.h"
+#include "editor/plugins/editor_plugin.h"
 
-#include <godot_cpp/core/mutex_lock.hpp>
-#include <godot_cpp/godot.hpp>
+class WebToolsEditorPlugin : public EditorPlugin {
+	GDCLASS(WebToolsEditorPlugin, EditorPlugin);
 
-using namespace godot;
+private:
+	void _zip_file(String p_path, String p_base_path, zipFile p_zip);
+	void _zip_recursive(String p_path, String p_base_path, zipFile p_zip);
+	void _download_zip();
 
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
+public:
+	static void initialize();
 
-#include "core/typedefs.h"
+	WebToolsEditorPlugin();
+};
 
-#include "modules/modules_enabled.gen.h" // For svg.
-#endif
+#else
 
-#ifdef MODULE_SVG_ENABLED
+class WebToolsEditorPlugin {
+public:
+	static void initialize() {}
+};
 
-#include <thorvg.h>
-
-void tvg_get_bounds(tvg::Picture *p_picture, float &r_min_x, float &r_min_y, float &r_max_x, float &r_max_y);
-
-#endif // MODULE_SVG_ENABLED
-
-#endif // THORVG_BOUNDS_ITERATOR_H
+#endif // WEB_TOOLS_EDITOR_PLUGIN_H

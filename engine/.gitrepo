@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/godotengine/godot.git
 	branch = master
-	commit = 9e6098432aac35bae42c9089a29ba2a80320d823
-	parent = efcd0a6d9eee26385a252c64de942b7ee30cebcf
+	commit = 0eadbdb5d0709e4e557e52377fa075d3e2f0ad1f
+	parent = 67af39b7eb4e4887c49b80ea84759bcb66691330
 	method = merge
 	cmdver = 0.4.6
