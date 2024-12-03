@@ -1,0 +1,64 @@
+@baseclass = Angle [
+	// https://github.com/TrenchBroom/TrenchBroom/issues/3827
+	angles(string) : "Pitch Yaw Roll" : "0 0 0"
+]
+
+@baseclass = Targets [
+	target(string) : "Target"
+	targetname(string) : "Target Name"
+]
+
+@SolidClass = worldspawn : "World entity" []
+
+@SolidClass = area : "Area" []
+
+@SolidClass = nocollision : "No collision" []
+
+@PointClass base(Angle) size(-16 -16 -16, 16 16 16) color(0 255 0) = player : "Player" []
+
+@PointClass size(-4 -4 -4, 4 4 4) color(255 255 0) = light : "Light" [
+	range(float) : "Range" : 10
+	energy(float) : "Energy" : 1 : "The light's strengh multiplier"
+	attenuation(float) : "Attenuation" : 1 : "The drop-off curve (lower values emit more light far away)"
+	specular(float) : "Specular" : 0.5 : "Intensity of the specular blob on reflective surfaces"
+	light_color(color255) : "Color" : "255 255 255"
+]
+
+@SolidClass = func_phys : "Physics Brush" [
+	targetname(string) : "Target Name"
+	mass(float) : "Mass" : 1
+]
+@SolidClass = func_phys_static : "Physics Brush Static" [
+	targetname(string) : "Target Name"
+]
+
+@SolidClass = func_phys_breakable : "Breakable" []
+@SolidClass = func_detail : "Detai" []
+@PointClass size(-4 -4 -4, 4 4 4) = func_distance_constraint : "Distance Constraint" [
+	target_a(string) : "Target Name"
+	target_b(string) : "Target Name"
+	target_attachment_b(string) : "Target Name"
+]
+
+@PointClass size(-4 -4 -4, 4 4 4) = func_phys_attachment : "Physics Attachment" [
+]
+
+@PointClass size(-4 -4 -4, 4 4 4) = func_point_constraint : "Point Constraint" [
+	targetname(string) : "Target Name"
+]
+
+@PointClass base(Targets) size(-8 -8 -4, 8 8 4) color(255 0 0) = path_corner : "Path Corner" [
+	first(bool) : "First" : 0
+	wait_time(float) : "Wait time" : 0
+]
+
+@PointClass base(Targets) size(-4 -4 -4, 4 4 4) model("models/dev/info_hint.obj") color(255 0 0) = info_hint : "Info Hint" [
+	hint_type(choices) : "Hint Type" : 0 = [
+		0 : "Cover"
+		1 : "Crouch Cover"
+	]
+]
+
+@PointClass base(Targets) size(-4 -4 0, 4 4 16 ) color(255 0 0) = npc_guard : "Guard" [
+	patrol_target(string) : "Patrol Target"
+]

@@ -1,0 +1,88 @@
+[gd_scene load_steps=12 format=3 uid="uid://b082xwj5wnkvt"]
+
+[ext_resource type="Script" uid="uid://b7xanl38c73ra" path="res://scripts/npcs/guard/npc_guard.gd" id="1_kwj6l"]
+[ext_resource type="Script" uid="uid://l2fbayo8yn05" path="res://scripts/npcs/npc_movement.gd" id="2_d72eg"]
+[ext_resource type="Texture2D" uid="uid://d00tyvano74ae" path="res://materials/dev/arona.png" id="3_ihyei"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_gsf6x"]
+height = 1.6
+radius = 0.3
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_vovlf"]
+height = 1.0
+radius = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6ks2j"]
+distance_fade_mode = 3
+distance_fade_min_distance = 1.25
+distance_fade_max_distance = 1.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ifw1q"]
+material = SubResource("StandardMaterial3D_6ks2j")
+top_radius = 0.3
+bottom_radius = 0.3
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i0bsj"]
+transparency = 2
+alpha_scissor_threshold = 0.5
+alpha_antialiasing_mode = 0
+cull_mode = 2
+albedo_texture = ExtResource("3_ihyei")
+texture_filter = 5
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_1uybg"]
+material = SubResource("StandardMaterial3D_i0bsj")
+size = Vector2(1.6, 1.6)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_w6uoy"]
+height = 1.6
+radius = 0.4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_kwj6l"]
+
+[node name="NpcTest" type="Node3D" node_paths=PackedStringArray("nav_agent", "npc_movement")]
+script = ExtResource("1_kwj6l")
+vision_range = null
+vision_fov = null
+nav_agent = NodePath("CharacterBody3D/NavigationAgent3D")
+npc_movement = NodePath("CharacterBody3D")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="." node_paths=PackedStringArray("standing_collision_shape", "crouching_collision_shape", "graphics_node", "ghost_physics_body")]
+script = ExtResource("2_d72eg")
+standing_collision_shape = NodePath("StandingCollisionShape")
+crouching_collision_shape = NodePath("CrouchingCollisionShape")
+graphics_node = NodePath("PlayerGraphics")
+ghost_physics_body = NodePath("GhostBody")
+
+[node name="StandingCollisionShape" type="CollisionShape3D" parent="CharacterBody3D"]
+unique_name_in_owner = true
+shape = SubResource("CylinderShape3D_gsf6x")
+
+[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="CharacterBody3D"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.299672, 0)
+shape = SubResource("CylinderShape3D_vovlf")
+disabled = true
+
+[node name="PlayerGraphics" type="MeshInstance3D" parent="CharacterBody3D"]
+unique_name_in_owner = true
+mesh = SubResource("CylinderMesh_ifw1q")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D/PlayerGraphics"]
+transform = Transform3D(-1, 8.74228e-08, -3.82137e-15, 0, -4.37114e-08, -1, -8.74228e-08, -1, 4.37114e-08, 0, 0, -0.337136)
+mesh = SubResource("PlaneMesh_1uybg")
+
+[node name="GhostBody" type="AnimatableBody3D" parent="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 2
+sync_to_physics = false
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="CharacterBody3D/GhostBody"]
+shape = SubResource("CylinderShape3D_w6uoy")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="CharacterBody3D"]
+debug_enabled = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_kwj6l")

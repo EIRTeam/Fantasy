@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://lo8eh53t3qoo"]
+
+[ext_resource type="Script" uid="uid://caf1dsevf8etu" path="res://scripts/tb_entities/func_point_constraint.gd" id="1_aovjv"]
+
+[node name="FuncPointConstraint" type="JoltPinJoint3D"]
+script = ExtResource("1_aovjv")

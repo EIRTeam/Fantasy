@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b86gfw6wocv4d"]
+
+[ext_resource type="Script" uid="uid://llnkpwtsqlsn" path="res://scripts/tb_entities/func_phys_breakable.gd" id="1_dr71a"]
+
+[node name="FuncPhysBreakable" type="RigidBody3D"]
+script = ExtResource("1_dr71a")

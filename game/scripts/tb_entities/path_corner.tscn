@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cy2xhdjavaeod"]
+
+[ext_resource type="Script" uid="uid://d2tyekms3w7wh" path="res://scripts/path_corner.gd" id="1_cfo8r"]
+
+[node name="PathCorner" type="Marker3D"]
+script = ExtResource("1_cfo8r")
+path_points = PackedVector3Array()
+wait_time = null

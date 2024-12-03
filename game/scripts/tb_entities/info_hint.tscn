@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://118u6hsdgbwq"]
+
+[ext_resource type="PackedScene" uid="uid://cnemqiv1ubhu2" path="res://models/dev/info_hint.blend" id="1_ehsik"]
+[ext_resource type="Script" uid="uid://15vffp46wonh" path="res://scripts/info_hint.gd" id="1_rd105"]
+
+[node name="InfoHint" type="Node3D"]
+script = ExtResource("1_rd105")
+
+[node name="info_hint" parent="." instance=ExtResource("1_ehsik")]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)

@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://cdsqh8db5itvl"]
+
+[ext_resource type="Texture2D" uid="uid://cfl3l3tqntl74" path="res://materials/dev/reflectivity_70.png" id="1_6tasy"]
+
+[resource]
+albedo_texture = ExtResource("1_6tasy")
+texture_filter = 5

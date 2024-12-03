@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhujo81x5g3p8"]
+
+[ext_resource type="Script" uid="uid://gcea27cbmj6d" path="res://scripts/tb_entities/func_distance_constraint.gd" id="1_jd7t0"]
+
+[node name="FuncDistanceConstraint" type="Node3D"]
+script = ExtResource("1_jd7t0")

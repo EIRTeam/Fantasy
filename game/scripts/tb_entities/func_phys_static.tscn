@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://by33u5whriv3k"]
+
+[node name="FuncPhysStatic" type="StaticBody3D"]

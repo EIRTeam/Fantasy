@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://ctq24uqv600oq"]
+
+[node name="FuncPhys" type="RigidBody3D"]

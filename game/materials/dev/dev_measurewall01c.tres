@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://c8n4yblcj1sfh"]
+
+[ext_resource type="Texture2D" uid="uid://dgw7q18dwl60f" path="res://materials/dev/dev_measurewall01c.png" id="1_rjmhn"]
+
+[resource]
+albedo_texture = ExtResource("1_rjmhn")
+texture_filter = 5

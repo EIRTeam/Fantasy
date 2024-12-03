@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3 uid="uid://dfojyfxjudhgk"]
+
+[sub_resource type="Gradient" id="Gradient_2bwnm"]
+offsets = PackedFloat32Array(0, 0.716814, 1)
+colors = PackedColorArray(0.932, 0.588, 0, 1, 0.980743, 0.430751, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_a87oq"]
+gradient = SubResource("Gradient_2bwnm")
+use_hdr = true
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_2bwnm"]
+emission_shape = 2
+emission_sphere_radius = 1.0
+gravity = Vector3(0, 0, 0)
+tangential_accel_min = 2.0
+tangential_accel_max = 5.0
+scale_min = 0.25
+color = Color(4, 4, 4, 1)
+color_ramp = SubResource("GradientTexture1D_a87oq")
+turbulence_noise_strength = 0.1
+
+[sub_resource type="Curve" id="Curve_a87oq"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y261f"]
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+use_particle_trails = true
+
+[sub_resource type="RibbonTrailMesh" id="RibbonTrailMesh_1vkxy"]
+material = SubResource("StandardMaterial3D_y261f")
+shape = 0
+size = 0.025
+curve = SubResource("Curve_a87oq")
+
+[node name="GravityGunParticles" type="GPUParticles3D"]
+amount = 80
+lifetime = 0.75
+transform_align = 3
+trail_enabled = true
+process_material = SubResource("ParticleProcessMaterial_2bwnm")
+draw_pass_1 = SubResource("RibbonTrailMesh_1vkxy")
