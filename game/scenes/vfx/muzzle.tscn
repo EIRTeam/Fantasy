@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://c6c1ce7lx7lum"]
+
+[ext_resource type="Script" uid="uid://csodcuix3r7ic" path="res://scripts/muzzle_flash.gd" id="1_dyk1n"]
+[ext_resource type="Material" uid="uid://c4makeouppur" path="res://materials/vfx/muzzle.tres" id="2_pgukg"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_cb0mx"]
+material = ExtResource("2_pgukg")
+
+[node name="MeshInstance3D" type="Node3D"]
+script = ExtResource("1_dyk1n")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, -1, -4.37114e-08, -4.37114e-08, 4.37114e-08, -1, 1.91069e-15, 0, 0, -0.344758)
+mesh = SubResource("QuadMesh_cb0mx")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 4.37114e-08, -1.59578e-37, -7.30144e-30, 1.91069e-15, 1, 4.37114e-08, -1, 1.91069e-15, 0, 0, -0.344758)
+mesh = SubResource("QuadMesh_cb0mx")

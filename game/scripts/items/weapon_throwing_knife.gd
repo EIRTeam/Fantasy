@@ -23,9 +23,8 @@ func calculate_damage(charge_amount: float) -> float:
 	return DAMAGE_LOW
 
 func throw_knife(shared: WeaponShared, charge_amount: float):
-	var cam := shared.actor_movement.get_viewport().get_camera_3d()
-	var ray_origin := cam.project_ray_origin(shared.actor_movement.get_window().size * 0.5)
-	var ray_normal := cam.project_ray_normal(shared.actor_movement.get_window().size * 0.5)
+	var ray_origin := shared.actor_aim_origin
+	var ray_normal := shared.actor_aim_normal
 	
 	var character_plane := Plane(ray_normal, shared.actor_look.global_position)
 	var knife_origin := character_plane.project(ray_origin)

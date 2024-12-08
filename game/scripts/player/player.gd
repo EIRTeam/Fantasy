@@ -6,22 +6,86 @@ class_name HBPlayer
 @onready var player_camera: HBPlayerCameraArm = get_node("%PlayerCameraArm")
 @onready var player_graphics: Node3D = get_node("%PlayerGraphics")
 @onready var player_ghost_body: Node3D = get_node("%GhostBody")
+@onready var weapon_muzzle: Node3D = get_node("%Muzzle")
+@onready var muzzle_flash: HBMuzzleFlash = get_node("%MuzzleFlash")
+@onready var audio_playback: AudioStreamPlaybackPolyphonic
+
+signal camouflage_index_changed(camo_index: float)
+
+const BASE_CAMERA_OFFSET := Vector3(0.5, 0.0, 3.0)
+const ADS_CAMERA_OFFSET := Vector3(0.5, 0.0, 1.5)
 
 var weapon_instances: Array[WeaponInstance]
 var current_weapon_instance: WeaponInstance
 var game_time := 0.0
 
-const CROUCH_HEIGHT_OFFSET := 0.4
-var camera_tracked_position_height_offset := 0.0
+const CROUCH_HEIGHT_OFFSET := 0.0
+const BASE_HEIGHT_OFFSET := 0.6
+const ADS_HEIGHT_OFFSET := 0.15
+var aim_height_offset := 0.0
+var locomotion_camera_height_offset := BASE_HEIGHT_OFFSET
 
-func get_weapon_shared_state() -> WeaponInstance.WeaponShared:
-	var shared_state := WeaponInstance.WeaponShared.new()
-	shared_state.actor_movement = player_movement
-	shared_state.actor_look = player_camera
-	shared_state.actor_ghost_body = player_ghost_body
-	shared_state.game_time = game_time
-	return shared_state
+const STEP_FREQUENCY := 1.0
+const STEP_NOISE_MAX_RADIUS := 2.0
+var noise_emitter_loud: HBNoiseEmitter
+var camera_side := 1.0
+var prev_camo_index := 0.0
+
+var graphics_rotation_inertializer: RotationInertializer
+var weapon_shared_state := WeaponInstance.WeaponShared.new()
+var aiming := false
+
+var virtual_hitbox: VirtualHitbox
+
+var weapon_spread := 0.0
+signal weapon_equipped(weapon: WeaponInstance)
+signal weapon_unequipped(weapon: WeaponInstance)
+signal weapon_spread_changed(new_spread: float)
+
+
+
+static var current: HBPlayer:
+	get:
+		if is_instance_valid(current):
+			return current
+		return null
+
+func update_weapon_shared_state():
+	weapon_shared_state.actor_movement = player_movement
+	weapon_shared_state.actor_look = player_camera
+	weapon_shared_state.actor_ghost_body = player_ghost_body
+	weapon_shared_state.game_time = game_time
+	var vp_size_2 := get_window().size * 0.5
+	weapon_shared_state.actor_aim_normal = player_camera.camera.project_ray_normal(vp_size_2)
+	weapon_shared_state.actor_aim_origin = player_camera.camera.project_ray_origin(vp_size_2)
+	weapon_shared_state.weapon_muzzle = weapon_muzzle
+	weapon_shared_state.spread = weapon_spread
+	weapon_shared_state.audio_playback = audio_playback
+func _update_camera_height_offset():
+	player_camera.base_tracked_position = get_camera_tracked_position()
+	
+func _on_throwing_knife_ended():
+	player_camera.target_camera_fov = HBPlayerCameraArm.BASE_FOV
+	player_camera.inertialize_fov()
+	
+func _on_throwing_knife_started():
+	player_camera.target_camera_fov = HBPlayerCameraArm.BASE_FOV
+	player_camera.inertialize_fov()
+	
+func _on_round_fired():
+	var weapon := current_weapon_instance as WeaponInstanceFirearmBase
+	weapon_spread = min(weapon_spread + weapon.firearm_weapon_data.spread_gain_per_shot, weapon.firearm_weapon_data.max_spread)
+	weapon_spread_changed.emit(weapon_spread)
 func _ready() -> void:
+	virtual_hitbox = VirtualHitbox.new(self, $PlayerHitbox.shape)
+	(get_node("%AudioStreamPlayer3D") as AudioStreamPlayer3D).play()
+	audio_playback = (get_node("%AudioStreamPlayer3D") as AudioStreamPlayer3D).get_stream_playback()
+	current = self
+	noise_emitter_loud = HBNoiseEmitter.new(STEP_NOISE_MAX_RADIUS)
+	player_movement.add_child(noise_emitter_loud)
+	noise_emitter_loud.position = Vector3.ZERO
+	player_camera.base_camera_offset = BASE_CAMERA_OFFSET
+	_update_camera_height_offset()
 	player_movement.top_level = true
 	player_movement.movement_snapped.connect(_on_movement_snapped)
 	weapon_instances.resize(WeaponData.WeaponSlot.size())
@@ -29,34 +93,34 @@ func _ready() -> void:
 	gravity_gun.weapon_data = WeaponData.new()
 	weapon_instances[WeaponData.WeaponSlot.GRAVITY_GUN] = gravity_gun
 	
-	gravity_gun.grappled_object.connect(player_camera.set.bind(&"target_camera_offset", player_camera.ADS_CAMERA_OFFSET))
+	gravity_gun.grappled_object.connect(player_camera.set.bind(&"base_camera_offset", ADS_CAMERA_OFFSET))
 	gravity_gun.grappled_object.connect(player_camera.inertialize_offset)
 	
-	gravity_gun.released_object.connect(player_camera.set.bind(&"target_camera_offset", player_camera.BASE_CAMERA_OFFSET))
+	gravity_gun.released_object.connect(player_camera.set.bind(&"base_camera_offset", BASE_CAMERA_OFFSET))
 	gravity_gun.released_object.connect(player_camera.inertialize_offset)
-	gravity_gun.holstered.connect(player_camera.set.bind(&"target_camera_offset", player_camera.BASE_CAMERA_OFFSET))
+	gravity_gun.holstered.connect(player_camera.set.bind(&"base_camera_offset", BASE_CAMERA_OFFSET))
 	gravity_gun.holstered.connect(player_camera.inertialize_offset)
 	
 	var throwing_knife := WeaponInstanceThrowingKnife.new()
 	throwing_knife.weapon_data = WeaponData.new()
 	weapon_instances[WeaponData.WeaponSlot.THROWING_KNIFE] = throwing_knife
-	throwing_knife.charge_started.connect(func():
-		player_camera.target_camera_fov = HBPlayerCameraArm.BASE_FOV
-		player_camera.inertialize_fov()
-	)
-	throwing_knife.charge_canceled.connect(func():
-		player_camera.target_camera_fov = HBPlayerCameraArm.BASE_FOV
-		player_camera.inertialize_fov()
-	)
-	throwing_knife.knife_thrown.connect(func():
-		player_camera.target_camera_fov = HBPlayerCameraArm.BASE_FOV
-		player_camera.inertialize_fov()
-	)
+	throwing_knife.charge_started.connect(self._on_throwing_knife_started)
+	throwing_knife.charge_canceled.connect(self._on_throwing_knife_ended)
+	throwing_knife.knife_thrown.connect(self._on_throwing_knife_ended)
 	throwing_knife.charge_progressed.connect(func(progress: float):
 		player_camera.target_camera_fov = lerp(HBPlayerCameraArm.BASE_FOV, HBPlayerCameraArm.KNIFE_CHARGED_FOV, progress)
+		player_camera.camera_sensitivity = lerp(1.0, 0.1, progress)
 	)
 	
-	var weapon_shared_state := get_weapon_shared_state()
+	var rifle := WeaponInstanceFirearmBase.new()
+	weapon_instances[WeaponData.WeaponSlot.TEST_RIFLE] = rifle
+	
+	for weapon in weapon_instances:
+		if weapon is WeaponInstanceFirearmBase:
+			weapon.round_fired.connect(muzzle_flash.fire)
+			weapon.round_fired.connect(self._on_round_fired)
+	
+	update_weapon_shared_state()
 	
 	for weapon in weapon_instances:
 		if weapon:
@@ -68,31 +132,63 @@ func select_weapon(weapon_slot: WeaponData.WeaponSlot):
 	if weapon_instances[weapon_slot]:
 		if current_weapon_instance:
 			current_weapon_instance.notify_holster()
+			weapon_unequipped.emit(current_weapon_instance)
 		current_weapon_instance = weapon_instances[weapon_slot]
 		current_weapon_instance.draw()
+		weapon_equipped.emit(current_weapon_instance)
+		if current_weapon_instance is WeaponInstanceFirearmBase:
+			weapon_spread = current_weapon_instance.firearm_weapon_data.base_spread
+			weapon_spread_changed.emit(weapon_spread)
 	
 func get_camera_tracked_position() -> Vector3:
-	return player_movement.global_position - Vector3(0.0, camera_tracked_position_height_offset, 0.0)
+	return player_movement.global_position + Vector3(0.0, locomotion_camera_height_offset + aim_height_offset, 0.0)
 	
 func _on_movement_snapped():
-	player_camera.base_tracked_position = get_camera_tracked_position()
+	_update_camera_height_offset()
 	player_camera.inertialize_position()
 
 func _physics_process(delta: float) -> void:
+	#var point_cast := PhysicsPointQueryParameters3D.new()
+	#point_cast.position = player_movement.global_position
+	#point_cast.collision_mask = HBPhysicsLayers.LAYER_ENTITY_HITBOXES
+	#var dss := get_world_3d().direct_space_state
+	#print(dss.intersect_point(point_cast))
+	
+	if Input.is_action_just_pressed(&"aim"):
+		aiming = true
+		player_camera.base_camera_offset = ADS_CAMERA_OFFSET
+		aim_height_offset = ADS_HEIGHT_OFFSET
+		_update_camera_height_offset()
+		player_camera.inertialize_offset()
+		player_camera.inertialize_position()
+	elif Input.is_action_just_released(&"aim"):
+		aiming = false
+		player_camera.base_camera_offset = BASE_CAMERA_OFFSET
+		aim_height_offset = 0.0
+		_update_camera_height_offset()
+		player_camera.inertialize_offset()
+		player_camera.inertialize_position()
 	if Input.is_action_just_pressed("crouch_toggle"):
-		var new_height_offset := camera_tracked_position_height_offset
+		var new_height_offset := locomotion_camera_height_offset
 		if player_movement.stance == HBPlayerMovement.Stance.CROUCHING:
 			if player_movement.try_change_stance(HBPlayerMovement.Stance.STANDING):
-				new_height_offset = 0.0
+				new_height_offset = BASE_HEIGHT_OFFSET
 		else:
 			if player_movement.try_change_stance(HBPlayerMovement.Stance.CROUCHING):
 				new_height_offset = CROUCH_HEIGHT_OFFSET
-		if new_height_offset != camera_tracked_position_height_offset:
-			camera_tracked_position_height_offset = new_height_offset
-			player_camera.base_tracked_position = get_camera_tracked_position()
+		if new_height_offset != locomotion_camera_height_offset:
+			locomotion_camera_height_offset = new_height_offset
+			_update_camera_height_offset()
 			player_camera.inertialize_position()
+		
 	player_movement.advance(delta)
-	player_camera.base_tracked_position = get_camera_tracked_position()
+	
+	if player_movement.effective_velocity.length() > (STEP_NOISE_MAX_RADIUS - 0.1):
+		noise_emitter_loud.disabled = false
+	else:
+		noise_emitter_loud.disabled = true
+	
+	_update_camera_height_offset()
 	game_time += delta
 	
 	if player_movement.get_input().length() > 0.0:
@@ -102,31 +198,67 @@ func _physics_process(delta: float) -> void:
 			player_graphics.global_basis = new_basis.scaled(player_graphics.global_basis.get_scale())
 			
 	if current_weapon_instance:
-		var shared_state := get_weapon_shared_state()
+		if current_weapon_instance is WeaponInstanceFirearmBase:
+			var prev_spread := weapon_spread
+			weapon_spread = move_toward(weapon_spread, current_weapon_instance.firearm_weapon_data.base_spread, delta * current_weapon_instance.firearm_weapon_data.spread_decay)
+			if prev_spread != weapon_spread:
+				weapon_spread_changed.emit(weapon_spread)
+		update_weapon_shared_state()
+		if aiming or current_weapon_instance is WeaponInstanceGravityGun:
+			var fire_actions: Array[StringName] = [
+				&"primary_fire",
+				&"secondary_fire"
+			]
+			
+			var fire_functions: Array[Callable] = [
+				current_weapon_instance.primary,
+				current_weapon_instance.secondary
+			]
+			
+			for i in range(fire_actions.size()):
+				var action := fire_actions[i]
+				var function := fire_functions[i]
+			
+				if Input.is_action_pressed(action) or Input.is_action_just_released(action):
+					var press_state := WeaponInstance.WeaponPressState.HELD
+					if Input.is_action_just_pressed(action):
+						press_state = WeaponInstance.WeaponPressState.JUST_PRESSED
+					elif Input.is_action_just_released(action):
+						press_state = WeaponInstance.WeaponPressState.JUST_RELEASED
+					function.call(weapon_shared_state, press_state)
+		current_weapon_instance._physics_process(weapon_shared_state, delta)
 		
-		var fire_actions: Array[StringName] = [
-			&"primary_fire",
-			&"secondary_fire"
-		]
+	var new_camo_index := calculate_camouflage_index()
+	if new_camo_index != prev_camo_index:
+		prev_camo_index = new_camo_index
+		camouflage_index_changed.emit(new_camo_index)
 		
-		var fire_functions: Array[Callable] = [
-			current_weapon_instance.primary,
-			current_weapon_instance.secondary
-		]
+	virtual_hitbox.update(player_movement.global_position)
 		
-		for i in range(fire_actions.size()):
-			var action := fire_actions[i]
-			var function := fire_functions[i]
-		
-			if Input.is_action_pressed(action) or Input.is_action_just_released(action):
-				var press_state := WeaponInstance.WeaponPressState.HELD
-				if Input.is_action_just_pressed(action):
-					press_state = WeaponInstance.WeaponPressState.JUST_PRESSED
-				elif Input.is_action_just_released(action):
-					press_state = WeaponInstance.WeaponPressState.JUST_RELEASED
-				function.call(shared_state, press_state)
-		current_weapon_instance._physics_process(shared_state, delta)
 	global_position = player_movement.global_position
+	
+func _process(delta: float) -> void:
+	# Put this here so we don't get interpolation artifacts
+	update_weapon_shared_state()
+			
+	if aiming:
+		var normal_planar := weapon_shared_state.actor_aim_normal
+		normal_planar.y = 0.0
+		normal_planar = normal_planar.normalized()
+		if normal_planar.normalized():
+			player_graphics.global_basis = Quaternion(Vector3.FORWARD, normal_planar)
+	
+func calculate_camouflage_index() -> float:
+	var camo_index := 0.0
+	var desired_vel := (player_movement.get_input() * player_movement.get_max_move_speed()).length()
+	if desired_vel < player_movement.get_max_move_speed() * 0.1:
+		camo_index += 0.25
+	elif desired_vel < player_movement.get_max_move_speed() - 0.1:
+		camo_index += 0.15
+	if player_movement.stance == HBPlayerMovement.Stance.CROUCHING:
+		camo_index += 0.25
+	return camo_index
+	
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed and (event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT):
@@ -140,6 +272,8 @@ func _input(event: InputEvent) -> void:
 			select_weapon(WeaponData.WeaponSlot.THROWING_KNIFE)
 		elif event.keycode == KEY_2:
 			select_weapon(WeaponData.WeaponSlot.GRAVITY_GUN)
+		elif event.keycode == KEY_3:
+			select_weapon(WeaponData.WeaponSlot.TEST_RIFLE)
 		elif event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			get_window().set_input_as_handled()

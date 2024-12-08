@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://o0uoyc3esu67"]
+
+[ext_resource type="Texture2D" uid="uid://6d3wp577t3h3" path="res://materials/vfx/scorch_02.png" id="1_3y7o8"]
+
+[resource]
+blend_mode = 1
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_3y7o8")
+metallic_specular = 0.0

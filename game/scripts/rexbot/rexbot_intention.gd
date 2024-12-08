@@ -25,6 +25,7 @@ func query(query: StringName, requesting_action: RexbotAction) -> RexbotAction.Q
 func respond_to_action(action: RexbotAction, response: RexbotActionResult):
 	match response.action_result:
 		RexbotActionResult.ActionResult.DONE:
+			action_stack[-1].exit()
 			action_stack.resize(action_stack.size()-1)
 			if action_stack.size() > 0:
 				respond_to_action(action, action_stack[-1].unsuspend())

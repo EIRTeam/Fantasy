@@ -29,25 +29,39 @@ func enter() -> RexbotActionResult:
 	
 	target_patrol_point = patrol_route_sorted_incides[0]
 	
-	npc.navigation.begin_navigating_to(patrol_route_positions[target_patrol_point].position, npc.patrol_speed)
+	npc.navigation.begin_navigating_to(patrol_route_positions[target_patrol_point].position, npc.npc_settings.movement_speed_patrol)
 	
 	return r_continue()
+
+func exit():
+	npc.navigation.abort_navigation()
+	
 func tick(delta: float) -> RexbotActionResult:
 	time += delta
 	
+	var are_we_dead_query_result := request_query(&"are_we_dead")
+	if are_we_dead_query_result == QueryResponse.ANSWER_YES:
+		return r_done()
 	var suspicious_query_result := request_query(&"did_we_hear_anything_suspicious")
-	if suspicious_query_result:
-		pass
+	if suspicious_query_result == QueryResponse.ANSWER_YES:
+		return r_done()
 	
-	if waiting and time < next_movement_time:
-		return r_continue()
-	if npc.navigation.is_navigation_finished() and waiting:
-		waiting = false
-		var nav_points := npc.patrol_route.path_points
-		npc.navigation.begin_navigating_to(nav_points[target_patrol_point].position, npc.patrol_speed)
-	else:
+	var player_visible_query_result := request_query(&"did_we_see_the_player")
+	if player_visible_query_result == QueryResponse.ANSWER_YES:
+		return r_done()
+	
+	if npc.navigation.is_navigation_finished() and not waiting:
 		waiting = true
 		var nav_points := npc.patrol_route.path_points
 		next_movement_time = time + nav_points[target_patrol_point].wait_time
 		target_patrol_point = (target_patrol_point + 1) % nav_points.size()
+		return r_continue()
+	
+	if waiting and time < next_movement_time:
+		return r_continue()
+	if waiting:
+		waiting = false
+		var nav_points := npc.patrol_route.path_points
+		npc.navigation.begin_navigating_to(nav_points[target_patrol_point].position, npc.npc_settings.movement_speed_patrol)
+
 	return r_continue()

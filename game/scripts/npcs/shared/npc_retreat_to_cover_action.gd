@@ -10,6 +10,9 @@ func enter() -> RexbotActionResult:
 	return r_continue()
 
 func tick(_delta: float) -> RexbotActionResult:
+	var are_we_dead_query_result := request_query(&"are_we_dead")
+	if are_we_dead_query_result == QueryResponse.ANSWER_YES:
+		return r_done()
 	if npc.navigation.is_navigation_finished():
 		r_done()
 	return r_continue()

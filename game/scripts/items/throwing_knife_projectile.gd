@@ -35,8 +35,12 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		if not collider:
 			continue
 		if not dealt_damage:
-			if collider.is_in_group(&"can_receive_damage") and collider.has_method(&"_receive_damage"):
-				collider._receive_damage(damage)
+			var object_to_damage := collider
+			## HACK-y... but let's damage the NPC
+			if collider.get_parent() is NPCBase:
+				object_to_damage = collider.get_parent()
+			if object_to_damage.is_in_group(&"can_receive_damage") and object_to_damage.has_method(&"_receive_damage"):
+				object_to_damage._receive_damage(damage)
 				dealt_damage = true
 		
 		# Don't attach to destroyables

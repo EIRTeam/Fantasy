@@ -88,15 +88,15 @@ func _physics_process(shared: WeaponShared, delta: float):
 	if current_grapple:
 		var direction := shared.actor_look.global_basis * Vector3.FORWARD
 		var view_right := shared.actor_look.global_basis * Vector3.RIGHT
-		var view_up := shared.actor_look.global_basis * Vector3.UP
-		current_grapple.attachment_static_body.global_position = current_grapple.attachment_static_body.global_position.move_toward(view_up + view_right * 0.5 + shared.actor_look.global_position + direction * GRAVITY_GUN_GRAPPLE_TARGET_DISTANCE, 20.0 * delta)
+		current_grapple.attachment_static_body.global_position = current_grapple.attachment_static_body.global_position.move_toward(view_right * 0.5 + shared.actor_look.global_position + direction * GRAVITY_GUN_GRAPPLE_TARGET_DISTANCE, 20.0 * delta)
 		current_grapple.attachment_static_body.global_basis = shared.actor_look.global_basis
 		grab_particles.emitting = true
 		grab_particles.global_position = current_grapple.collider.global_position
 func primary(shared: WeaponShared, press_state: WeaponPressState):
-	if shared.game_time < next_yeet_time:
-		return
 	if press_state != WeaponPressState.JUST_PRESSED:
+		return
+	
+	if shared.game_time < next_yeet_time:
 		return
 	if current_grapple:
 		var collider := current_grapple.collider
@@ -107,7 +107,6 @@ func primary(shared: WeaponShared, press_state: WeaponPressState):
 		next_yeet_time = shared.game_time + 0.5
 		next_grab_time = shared.game_time + 0.5
 	else:
-		print("RC OUT!")
 		var vp := shared.actor_look.get_window()
 		var look_origin := vp.get_camera_3d().project_ray_origin(vp.size * 0.5)
 		var look_normal := vp.get_camera_3d().project_ray_normal(vp.size * 0.5)
@@ -116,7 +115,6 @@ func primary(shared: WeaponShared, press_state: WeaponPressState):
 		var raycast_out := dss.intersect_ray(ray_params)
 		if raycast_out.is_empty():
 			return
-		print(raycast_out.collider)
 		if raycast_out.collider is RigidBody3D and raycast_out.collider.is_in_group(&"pickupable"):
 			next_yeet_time = shared.game_time + 0.5
 			next_grab_time = shared.game_time + 0.5
@@ -136,7 +134,7 @@ func secondary(shared: WeaponShared, press_state: WeaponPressState):
 	var ray_origin := cam.project_ray_origin(viewport_size * 0.5)
 	var ray_normal := cam.project_ray_normal(viewport_size * 0.5)
 	
-	var params := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_normal * GRAVITY_GUN_MAX_PULL_DISTANCE, 0b10)
+	var params := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_normal * GRAVITY_GUN_MAX_PULL_DISTANCE, HBPhysicsLayers.LAYER_PROPS | HBPhysicsLayers.LAYER_WORLDSPAWN)
 	var ray_result := shared.actor_movement.get_world_3d().direct_space_state.intersect_ray(params)
 	if not ray_result.is_empty():
 		var collider := ray_result.collider as RigidBody3D

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="HBNoiseMaterial" load_steps=2 format=3 uid="uid://evi7qil1euvh"]
+
+[ext_resource type="Script" uid="uid://dswu4ngc26om6" path="res://scripts/hearing/noise_material.gd" id="1_5tcxy"]
+
+[resource]
+script = ExtResource("1_5tcxy")
+noise_radius = 20.0
+minimum_noise_speed = 8.0
+metadata/_custom_type_script = ExtResource("1_5tcxy")

@@ -1,3 +1,6 @@
-[gd_scene format=3 uid="uid://ctq24uqv600oq"]
+[gd_scene load_steps=2 format=3 uid="uid://ctq24uqv600oq"]
+
+[ext_resource type="Script" uid="uid://dymhccrl21x73" path="res://scripts/physics_object_base.gd" id="1_31lx2"]
 
 [node name="FuncPhys" type="RigidBody3D"]
+script = ExtResource("1_31lx2")

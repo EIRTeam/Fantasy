@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://barmpl7apc50l"]
+
+[ext_resource type="Material" uid="uid://cgfwwucxpoer4" path="res://materials/vfx/firearm_trail.tres" id="1_hlbsg"]
+[ext_resource type="Script" uid="uid://bc3547t0ye3mw" path="res://scripts/firearm_trail.gd" id="2_3wju4"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_3wju4"]
+material = ExtResource("1_hlbsg")
+size = Vector2(1, 2)
+
+[node name="FirearmTrail" type="MeshInstance3D"]
+mesh = SubResource("QuadMesh_3wju4")
+script = ExtResource("2_3wju4")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("QuadMesh_3wju4")

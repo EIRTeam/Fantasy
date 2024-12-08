@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://ct7gqcfi801us"]
+
+[ext_resource type="Texture2D" uid="uid://db60e2oit08wr" path="res://materials/ui/alert.png" id="1_ihq1r"]
+
+[resource]
+blend_mode = 1
+shading_mode = 0
+albedo_texture = ExtResource("1_ihq1r")
+billboard_mode = 2
+billboard_keep_scale = true

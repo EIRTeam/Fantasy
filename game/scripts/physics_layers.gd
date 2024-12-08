@@ -2,4 +2,7 @@ class_name HBPhysicsLayers
 
 const LAYER_WORLDSPAWN := 1
 const LAYER_PROPS := 2
-const LAYER_ENTITIES := 4
+const LAYER_HEARING := 4
+const LAYER_ENTITY_HITBOXES := 8
+const LAYER_ENTITY_MOVEMENT_BOXES := 16
+const LAYER_GHOST_BODIES := 32

@@ -1,8 +1,6 @@
-extends RigidBody3D
+extends HBPhysicsObjectBase
 
 class_name DamageableRigidBody
-
-var prev_vel := Vector3()
 
 signal damage_received(damage: float)
 
@@ -23,8 +21,9 @@ func _notify_hit_by_body(other: DamageableRigidBody, other_prev_vel: Vector3, ot
 	pass
 
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
+	super._integrate_forces(state)
 	for i in range(state.get_contact_count()):
-		var our_delta_velocity := prev_vel.length() - linear_velocity.length()
+		var our_delta_velocity := previous_velocity.length() - linear_velocity.length()
 		
 		var total_wiped_energy := our_delta_velocity * our_delta_velocity * mass
 		var other_delta_velocity := 0.0
@@ -42,5 +41,4 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 			damage_received.emit(dmg)
 
 func _physics_process(delta: float) -> void:
-	# big hack frfr
-	prev_vel = linear_velocity
+	super._physics_process(delta)
