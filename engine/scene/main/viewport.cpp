@@ -682,8 +682,9 @@ void Viewport::_process_picking() {
 	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
 	}
-	if (!gui.mouse_in_viewport) {
-		// Clear picking events if mouse has left viewport.
+	if (!gui.mouse_in_viewport || gui.subwindow_over) {
+		// Clear picking events if the mouse has left the viewport or is over an embedded window.
+		// These are locations, that are expected to not trigger physics picking.
 		physics_picking_events.clear();
 		return;
 	}
@@ -1454,7 +1455,14 @@ void Viewport::_gui_show_tooltip() {
 
 	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
 	// This should be a Control node which will be added as child to a TooltipPanel.
-	Control *base_tooltip = tooltip_owner ? tooltip_owner->make_custom_tooltip(gui.tooltip_text) : nullptr;
+	Control *base_tooltip = tooltip_owner->make_custom_tooltip(gui.tooltip_text);
+
+	// When the custom control is not visible, don't show any tooltip.
+	// This way, the custom tooltip from `ConnectionsDockTree` can create
+	// its own tooltip without conflicting with the default one, even an empty tooltip.
+	if (base_tooltip && !base_tooltip->is_visible()) {
+		return;
+	}
 
 	if (gui.tooltip_text.is_empty() && !base_tooltip) {
 		return; // Nothing to show.
@@ -1741,6 +1749,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mb.is_valid()) {
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
+			if (gui.dragging && mb->get_button_index() == MouseButton::RIGHT) {
+				_perform_drop();
+				set_input_as_handled();
+				return;
+			}
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
 			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
 				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
@@ -1989,7 +2002,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Control *drag_preview = _gui_get_drag_preview();
 			if (drag_preview) {
-				drag_preview->set_position(mpos);
+				Vector2 pos = drag_preview->get_canvas_transform().affine_inverse().xform(mpos);
+				drag_preview->set_position(pos);
 			}
 
 			gui.drag_mouse_over = section_root->gui.target_control;
@@ -2426,11 +2440,11 @@ void Viewport::_gui_update_mouse_over() {
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
-Window *Viewport::get_base_window() const {
+Window *Viewport::get_base_window() {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
-	Viewport *v = const_cast<Viewport *>(this);
+	Viewport *v = this;
 	Window *w = Object::cast_to<Window>(v);
 	while (!w) {
 		v = v->get_parent_viewport();
@@ -2455,7 +2469,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		// No need for change.
 		return;
 	}
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
+	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
 		emit_signal(SNAME("gui_focus_changed"), p_control);
@@ -3066,8 +3080,8 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 		}
 
 		Viewport *section_root = get_section_root_viewport();
-		if (section_root && c->is_consume_drag_and_drop_enabled()) {
-			// Evaluating `consume_drag_and_drop` and adjusting target_control needs to happen
+		if (section_root && c->is_mouse_target_enabled()) {
+			// Evaluating `mouse_target` and adjusting target_control needs to happen
 			// after `_update_mouse_over` in the SubViewports, because otherwise physics picking
 			// would not work inside SubViewports.
 			section_root->gui.target_control = over;
@@ -3771,19 +3785,9 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 		}
 
 		if (allow_change) {
-			Vector<int> wl = DisplayServer::get_singleton()->get_window_list();
-			for (int index = 0; index < wl.size(); index++) {
-				DisplayServer::WindowID wid = wl[index];
-				if (wid == DisplayServer::INVALID_WINDOW_ID) {
-					continue;
-				}
-
-				ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-				if (woid.is_null()) {
-					continue;
-				}
-
-				Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
+			Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+			for (const DisplayServer::WindowID &window_id : wl) {
+				const Window *w = Window::get_from_id(window_id);
 				if (w && is_ancestor_of(w)) {
 					// Prevent change when this viewport has child windows that are displayed as native windows.
 					allow_change = false;
@@ -3901,6 +3905,16 @@ bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, 32, false);
 	return (canvas_cull_mask & (1 << p_layer));
 }
+
+#ifdef TOOLS_ENABLED
+bool Viewport::is_visible_subviewport() const {
+	if (!is_sub_viewport()) {
+		return true;
+	}
+	SubViewportContainer *container = Object::cast_to<SubViewportContainer>(get_parent());
+	return container && container->is_visible_in_tree();
+}
+#endif // TOOLS_ENABLED
 
 void Viewport::_update_audio_listener_2d() {
 	if (AudioServer::get_singleton()) {
@@ -4535,7 +4549,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
-			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
+			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
 	}
 }
@@ -4981,7 +4995,7 @@ Viewport::Viewport() {
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
 
 	default_texture.instantiate();
-	default_texture->vp = const_cast<Viewport *>(this);
+	default_texture->vp = this;
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = RS::get_singleton()->texture_proxy_create(texture_rid);
 
