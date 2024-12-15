@@ -13,17 +13,17 @@ var t1 := 0.0
 var v0 := 0.0
 var x0 := 0.0
 
-static func create(p_prev: Vector3, p_current: Vector3, p_target: Vector3, t1: float, dt: float) -> PositionInertializer:
-	var x0v := p_current - p_target
+static func create(p_prev: Vector3, p_current: Vector3, p_target: Vector3, p_t1: float, dt: float) -> PositionInertializer:
+	var _x0v := p_current - p_target
 	var x_minus1v := p_prev - p_target
 
 	# Frobenius norm (eigen norm())
-	var x0 := sqrt(x0v.dot(x0v));
-	if (x0 < 1e-10):
+	var _x0 := sqrt(_x0v.dot(_x0v));
+	if (_x0 < 1e-10):
 		return null;
 
 	# compute x_minus1
-	var x_minus1 := x_minus1v.dot(x0v.normalized())
+	var x_minus1 := x_minus1v.dot(_x0v.normalized())
 
 	# compute v0 and a0
 	# note.
@@ -32,41 +32,41 @@ static func create(p_prev: Vector3, p_current: Vector3, p_target: Vector3, t1: f
 	# if this is not the case, just clamp v0 or a0
 
 	# v0 = (x0 - x_minus1) / dt
-	var v0 := (x0 - x_minus1) / dt;
+	var _v0 := (_x0 - x_minus1) / dt;
 
-	if ((x0 > 0 && v0 < 0) || (x0 < 0 && v0 > 0)):
-		t1 = min(t1, -5 * x0 / v0);
+	if ((_x0 > 0 && _v0 < 0) || (_x0 < 0 && _v0 > 0)):
+		p_t1 = min(p_t1, -5 * _x0 / _v0);
 
 	# a0 = (-8 * v0 * t1 - 20 * x0) / (t1^2)
-	var a0 := (-8 * v0 * t1 - 20 * x0) / (t1 * t1);
+	var _a0 := (-8 * _v0 * p_t1 - 20 * _x0) / (p_t1 * p_t1);
 
-	if x0 > 0:
-		if v0 > 0:
-			v0 = 0;
-		if a0 < 0:
-			a0 = 0;
+	if _x0 > 0:
+		if _v0 > 0:
+			_v0 = 0;
+		if _a0 < 0:
+			_a0 = 0;
 	else:
-		if v0 < 0:
-			v0 = 0
-		if a0 > 0:
-			a0 = 0;
+		if _v0 < 0:
+			_v0 = 0
+		if _a0 > 0:
+			_a0 = 0;
 
 	# A = - (a0 * t1^2 + 6 * v0 * t1 + 12 * x0) / (2 * t1^5)
-	var A := -(a0 * t1 * t1 + 6.0 * v0 * t1 + 12.0 * x0) / (2.0 * t1 * t1 * t1 * t1 * t1);
+	var _A := -(_a0 * p_t1 * p_t1 + 6.0 * _v0 * p_t1 + 12.0 * _x0) / (2.0 * p_t1 * p_t1 * p_t1 * p_t1 * p_t1);
 	# B = (3 * a0 * t1^2 + 16 * v0 * t1 + 30 * x0) / (2 * t1^4)
-	var B := (3.0 * a0 * t1 * t1 + 16.0 * v0 * t1 + 30.0 * x0) / (2.0 * t1 * t1 * t1 * t1);
+	var _B := (3.0 * _a0 * p_t1 * p_t1 + 16.0 * _v0 * p_t1 + 30.0 * _x0) / (2.0 * p_t1 * p_t1 * p_t1 * p_t1);
 	# C = - (3 * a0 * t1^2 + 12 * v0 * t1 + 20 * x0) / (2 * t1^3)
-	var C := -(3.0 * a0 * t1 * t1 + 12.0 * v0 * t1 + 20.0 * x0) / (2.0 * t1 * t1 * t1);
+	var _C := -(3.0 * _a0 * p_t1 * p_t1 + 12.0 * _v0 * p_t1 + 20.0 * _x0) / (2.0 * p_t1 * p_t1 * p_t1);
 
 	var info := PositionInertializer.new()
-	info.x0v = x0v;
-	info.A = A;
-	info.B = B;
-	info.C = C;
-	info.x0 = x0;
-	info.v0 = v0;
-	info.a0 = a0;
-	info.t1 = t1;
+	info.x0v = _x0v;
+	info.A = _A;
+	info.B = _B;
+	info.C = _C;
+	info.x0 = _x0;
+	info.v0 = _v0;
+	info.a0 = _a0;
+	info.t1 = p_t1;
 	return info;
 
 func advance(p_delta: float) -> Vector3:

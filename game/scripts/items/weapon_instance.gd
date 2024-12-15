@@ -16,7 +16,8 @@ class WeaponShared:
 	var actor_aim_origin := Vector3()
 	var actor_aim_normal := Vector3()
 	var actor_ghost_body: Node3D
-	var weapon_muzzle: Node3D
+	var actor_hitbox: VirtualHitbox
+	var weapon_muzzle_position: Vector3
 	var game_time := 0.0
 	var spread := 0.0
 	var audio_playback: AudioStreamPlaybackPolyphonic

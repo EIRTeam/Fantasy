@@ -13,8 +13,6 @@ const TRAIL_SCENE := preload("res://scenes/vfx/firearm_trail.tscn")
 
 signal round_fired
 
-var debug_draw: HBDebugDraw
-
 func _init() -> void:
 	weapon_data = WeaponDataFirearmBase.new()
 	weapon_data.base_spread = deg_to_rad(1.0)
@@ -45,8 +43,9 @@ func randomize_direction_with_spread(spread_angle: float, direction: Vector3) ->
 func fire_round(shared: WeaponShared):
 	var layers := HBPhysicsLayers.LAYER_WORLDSPAWN | HBPhysicsLayers.LAYER_PROPS | HBPhysicsLayers.LAYER_ENTITY_HITBOXES
 	var aim_normal := randomize_direction_with_spread(shared.spread, shared.actor_aim_normal)
-	var ray_params := PhysicsRayQueryParameters3D.create(shared.actor_aim_origin, shared.actor_aim_origin + aim_normal * firearm_weapon_data.range, layers)
+	var ray_params := PhysicsRayQueryParameters3D.create(shared.actor_aim_origin, shared.actor_aim_origin + aim_normal * firearm_weapon_data.damage_range, layers)
 	var dss := shared.actor_movement.get_world_3d().direct_space_state
+	ray_params.exclude = [shared.actor_hitbox.get_body_rid()]
 	var ray_intersect_result := dss.intersect_ray(ray_params)
 	if ray_intersect_result.is_empty():
 		# TODO: Empty hit
@@ -58,12 +57,13 @@ func fire_round(shared: WeaponShared):
 	var trail := TRAIL_SCENE.instantiate() as FirearmTrail
 	shared.actor_movement.add_child(trail)
 	var muzzle := ray_params.from
-	if shared.weapon_muzzle:
-		muzzle = shared.weapon_muzzle.global_position
+	if shared.weapon_muzzle_position:
+		muzzle = shared.weapon_muzzle_position
 	trail.initialize(muzzle, ray_intersect_result.position, ray_intersect_result.normal, 250.0)
 	round_fired.emit()
 	var fire_period := 1.0 / (firearm_weapon_data.rounds_per_minute / 60.0)
 	next_round_time = shared.game_time + fire_period
+	# TODO: Set this up properly
 	if shared.audio_playback:
 		var weapon_sounds := [
 			preload("res://sounds/weapons/m4a1_unsil-1.wav"),

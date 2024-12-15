@@ -47,7 +47,7 @@ func _ready() -> void:
 	local_attachment_location_b = node_b.global_transform.affine_inverse() * global_attachment_location_b
 	
 	max_distance = global_position.distance_to(global_attachment_location_b)
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var location_a := node_a.global_transform * local_attachment_location_a
 	var location_b := node_b.global_transform * local_attachment_location_b
 	var diff := location_a.distance_to(location_b)

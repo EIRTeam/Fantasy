@@ -244,3 +244,8 @@ func advance(delta: float) -> void:
 		ghost_physics_body.global_position = global_position
 	effective_velocity = (global_position - prev_position) / delta
 	
+func get_stance_height(p_stance: Stance) -> float:
+	# HACK: Change this if we for some reason decide to stop using cylinders
+	var cyl := stance_collision_shapes[p_stance].shape as CylinderShape3D
+	assert(cyl)
+	return cyl.height

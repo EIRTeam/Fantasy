@@ -26,3 +26,6 @@ func update(position: Vector3):
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		PhysicsServer3D.free_rid(body)
+
+func get_body_rid() -> RID:
+	return body

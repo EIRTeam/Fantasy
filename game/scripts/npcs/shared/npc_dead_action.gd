@@ -7,5 +7,5 @@ func enter() -> RexbotActionResult:
 	npc.set_physics_process(false)
 	return r_continue()
 
-func tick(time: float) -> RexbotActionResult:
+func tick(_time: float) -> RexbotActionResult:
 	return r_continue()

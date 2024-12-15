@@ -10,13 +10,10 @@ enum QueryResponse {
 
 var brain: RexbotBrain
 
-# Queries
-signal query_requested(query_value: StringName)
-
 func request_query(query_value: StringName) -> QueryResponse:
 	return brain.query(self, query_value)
 
-func respond_to_query(query: StringName) -> QueryResponse:
+func respond_to_query(_query: StringName) -> QueryResponse:
 	return QueryResponse.ANSWER_UNDEFINED
 
 func suspend():
@@ -48,5 +45,5 @@ func r_change_to(action: RexbotAction) -> RexbotActionResult:
 	suspend_for.action = action
 	return suspend_for
 	
-func tick(time: float) -> RexbotActionResult:
+func tick(_time: float) -> RexbotActionResult:
 	return r_done()

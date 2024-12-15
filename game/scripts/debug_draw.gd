@@ -57,7 +57,6 @@ func draw_line(from: Vector3, to: Vector3, color := Color.RED, layer_name := DEF
 func draw_shape(shape: Shape3D, at_position: Vector3, color := Color.RED, layer_name := DEFAULT_DEBUG_LAYER):
 	var layer := get_debug_layer(layer_name)
 	var debug_mesh := shape.get_debug_mesh()
-	ResourceSaver.save(debug_mesh, "res://test.tres")
 	var mi := MeshInstance3D.new()
 	mi.mesh = debug_mesh
 	mi.position = at_position

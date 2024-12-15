@@ -1,9 +1,26 @@
-[gd_resource type="Resource" script_class="HBNoiseMaterial" load_steps=2 format=3 uid="uid://evi7qil1euvh"]
+[gd_resource type="Resource" script_class="HBNoiseMaterial" load_steps=11 format=3 uid="uid://evi7qil1euvh"]
 
 [ext_resource type="Script" uid="uid://dswu4ngc26om6" path="res://scripts/hearing/noise_material.gd" id="1_5tcxy"]
+[ext_resource type="AudioStream" uid="uid://bqtfigrc2opa7" path="res://sounds/physics/wood/wood_crate_impact_hard1.wav" id="1_f4u37"]
+[ext_resource type="AudioStream" uid="uid://tqro0gq0ylvo" path="res://sounds/physics/wood/wood_crate_impact_hard2.wav" id="2_jsxhy"]
+[ext_resource type="AudioStream" uid="uid://mqh7ekm7443f" path="res://sounds/physics/wood/wood_crate_impact_soft1.wav" id="2_xv03s"]
+[ext_resource type="AudioStream" uid="uid://bm1glltxi4xa" path="res://sounds/physics/wood/wood_crate_impact_soft2.wav" id="3_rcn2f"]
+[ext_resource type="AudioStream" uid="uid://bsumqqppuiv03" path="res://sounds/physics/wood/wood_crate_impact_hard3.wav" id="3_wndxj"]
+[ext_resource type="AudioStream" uid="uid://pf0pi007fvb0" path="res://sounds/physics/wood/wood_crate_impact_hard4.wav" id="4_gynf4"]
+[ext_resource type="AudioStream" uid="uid://cyck0n5xni2y4" path="res://sounds/physics/wood/wood_crate_impact_soft3.wav" id="4_qk2ci"]
+[ext_resource type="AudioStream" uid="uid://emc4qylk6yih" path="res://sounds/physics/wood/wood_crate_impact_hard5.wav" id="5_q3biy"]
+[ext_resource type="AudioStream" uid="uid://dikd0vf71qv6h" path="res://sounds/physics/wood/wood_box_scrape_smooth_loop1.wav" id="7_jsxhy"]
 
 [resource]
 script = ExtResource("1_5tcxy")
 noise_radius = 20.0
 minimum_noise_speed = 8.0
+minimum_sound_speed = 0.5
+minimum_noise_energy_delta = 200.0
+minimum_sound_energy_delta = 0.75
+soft_impact_sounds = Array[AudioStream]([ExtResource("2_xv03s"), ExtResource("3_rcn2f"), ExtResource("4_qk2ci")])
+hard_impact_sound_energy_delta_threshold = 100.0
+hard_impact_sounds = Array[AudioStream]([ExtResource("1_f4u37"), ExtResource("2_jsxhy"), ExtResource("3_wndxj"), ExtResource("4_gynf4"), ExtResource("5_q3biy")])
+scrape_smooth_loop = ExtResource("7_jsxhy")
+volume_energy_max_hard = 150.0
 metadata/_custom_type_script = ExtResource("1_5tcxy")

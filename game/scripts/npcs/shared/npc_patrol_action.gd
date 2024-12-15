@@ -3,12 +3,11 @@ extends NPCActionBase
 class_name NPCPatrolAction
 
 var target_patrol_point := -1
-var next_movement_time := 0
+var next_movement_time := 0.0
 var time := 0.0
 var waiting := false
 
 func enter() -> RexbotActionResult:
-	var guard := npc as NPCGuard
 	var patrol_route_positions := npc.patrol_route.path_points
 	assert(patrol_route_positions.size() > 0)
 	var patrol_route_distances: Array[float]
@@ -46,7 +45,7 @@ func tick(delta: float) -> RexbotActionResult:
 	if suspicious_query_result == QueryResponse.ANSWER_YES:
 		return r_done()
 	
-	var player_visible_query_result := request_query(&"did_we_see_the_player")
+	var player_visible_query_result := request_query(&"can_we_see_the_player")
 	if player_visible_query_result == QueryResponse.ANSWER_YES:
 		return r_done()
 	

@@ -20,8 +20,9 @@ signal released_object
 class GrappleInfo:
 	var attachment_static_body := StaticBody3D.new()
 	var attachment_joint := Generic6DOFJoint3D.new()
-	var collider: RigidBody3D
+	var collider: HBPhysicsObjectBase
 	var original_mass := 0.0
+	var original_physics_flags: int
 	var could_sleep := false
 
 var current_grapple: GrappleInfo
@@ -41,7 +42,7 @@ func holster():
 	if current_grapple:
 		_ungrapple()
 
-func _grapple_object(collider: RigidBody3D, shared: WeaponShared):
+func _grapple_object(collider: HBPhysicsObjectBase, shared: WeaponShared):
 	var info := GrappleInfo.new()
 	info.attachment_joint.top_level = true
 	info.attachment_static_body.top_level = true
@@ -56,10 +57,13 @@ func _grapple_object(collider: RigidBody3D, shared: WeaponShared):
 	info.attachment_joint.node_a = collider.get_path()
 	shared.actor_movement.add_child(info.attachment_joint)
 	info.original_mass = info.collider.mass
+	info.original_physics_flags = info.collider.flags
 	info.collider.mass = 1.0
 	info.could_sleep = info.collider.can_sleep
 	info.collider.can_sleep = false
 	info.collider.continuous_cd = true
+	# Grabbed objects can't emit noises
+	info.collider.flags &= ~HBPhysicsObjectBase.PhysicsObjectFlags.CAN_EMIT_NOISE
 	for r in [info.attachment_joint.set_param_x, info.attachment_joint.set_param_y, info.attachment_joint.set_param_z]:
 		r.call(Generic6DOFJoint3D.PARAM_LINEAR_SPRING_STIFFNESS, 5000.0)
 		r.call(Generic6DOFJoint3D.PARAM_LINEAR_SPRING_DAMPING, 15.0)
@@ -72,7 +76,7 @@ func _grapple_object(collider: RigidBody3D, shared: WeaponShared):
 func random_angular_velocity(min_rads: float, max_rads: float):
 	return Vector3(randf_range(min_rads, max_rads), randf_range(min_rads, max_rads), randf_range(min_rads, max_rads))
 
-func _yeet_object(object: RigidBody3D, direction: Vector3):
+func _yeet_object(object: HBPhysicsObjectBase, direction: Vector3):
 	object.linear_velocity += direction * OBJECT_YEET_VELOCITY
 	object.angular_velocity += random_angular_velocity(-OBJECT_YEET_ANGULAR_VELOCITY_MAX_MIN, OBJECT_YEET_ANGULAR_VELOCITY_MAX_MIN)
 
@@ -80,6 +84,7 @@ func _ungrapple():
 	current_grapple.attachment_joint.queue_free()
 	current_grapple.attachment_static_body.queue_free()
 	current_grapple.collider.mass = current_grapple.original_mass
+	current_grapple.collider.flags = current_grapple.original_physics_flags
 	current_grapple.collider.can_sleep = current_grapple.could_sleep
 	current_grapple = null
 	grab_particles.emitting = false
@@ -115,7 +120,7 @@ func primary(shared: WeaponShared, press_state: WeaponPressState):
 		var raycast_out := dss.intersect_ray(ray_params)
 		if raycast_out.is_empty():
 			return
-		if raycast_out.collider is RigidBody3D and raycast_out.collider.is_in_group(&"pickupable"):
+		if raycast_out.collider is HBPhysicsObjectBase and raycast_out.collider.flags & HBPhysicsObjectBase.PhysicsObjectFlags.CAN_BE_PICKED_UP:
 			next_yeet_time = shared.game_time + 0.5
 			next_grab_time = shared.game_time + 0.5
 			_yeet_object(raycast_out.collider, look_normal)
@@ -137,7 +142,7 @@ func secondary(shared: WeaponShared, press_state: WeaponPressState):
 	var params := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_normal * GRAVITY_GUN_MAX_PULL_DISTANCE, HBPhysicsLayers.LAYER_PROPS | HBPhysicsLayers.LAYER_WORLDSPAWN)
 	var ray_result := shared.actor_movement.get_world_3d().direct_space_state.intersect_ray(params)
 	if not ray_result.is_empty():
-		var collider := ray_result.collider as RigidBody3D
+		var collider := ray_result.collider as HBPhysicsObjectBase
 		if not collider:
 			return
 		var actor_position := shared.actor_movement.global_position as Vector3

@@ -10,7 +10,6 @@ static func create(p_prev: float, p_current: float, p_target: float, p_duration:
 
 	# Position info
 	var x_current: float = p_current - p_target
-	var x_prev: float = p_prev - p_target
 	inertializer.scalar_velocity = max((p_current - p_prev) / p_delta, 0.0)
 	inertializer.scalar_offset = x_current
 	inertializer.transition_duration = p_duration

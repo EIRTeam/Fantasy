@@ -50,8 +50,8 @@ height = 1.0
 radius = 0.4
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_5gtgg"]
-height = 2.16
-radius = 2.905
+height = 1.6
+radius = 0.3
 
 [node name="Node3D3" type="Node3D"]
 script = ExtResource("1_p47bc")
@@ -137,10 +137,22 @@ metadata/_custom_type_script = ExtResource("5_5gtgg")
 [node name="PlayerUI" type="CanvasLayer" parent="."]
 script = ExtResource("6_75vfm")
 
-[node name="CamoIndexLabel" type="Label" parent="PlayerUI"]
-unique_name_in_owner = true
+[node name="VBoxContainer" type="VBoxContainer" parent="PlayerUI"]
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 40.0
+mouse_filter = 2
+
+[node name="HealthLabel" type="Label" parent="PlayerUI/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CamoIndexLabel" type="Label" parent="PlayerUI/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AlertStatusLabel" type="Label" parent="PlayerUI/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="CenterContainer" type="CenterContainer" parent="PlayerUI"]
 anchors_preset = 15
@@ -148,11 +160,24 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="Crosshair" type="Control" parent="PlayerUI/CenterContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 script = ExtResource("7_0owmy")
+
+[node name="Bloody" type="ColorRect" parent="PlayerUI"]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0, 0, 1)
 
 [node name="PlayerHitbox" type="CollisionShape3D" parent="."]
 visible = false
@@ -160,6 +185,7 @@ shape = SubResource("CylinderShape3D_5gtgg")
 debug_color = Color(0.95171, 0.185773, 0.310269, 0.42)
 
 [connection signal="camouflage_index_changed" from="." to="PlayerUI" method="update_camo_index"]
+[connection signal="health_changed" from="." to="PlayerUI" method="_on_player_health_changed"]
 [connection signal="weapon_equipped" from="." to="PlayerUI" method="_on_player_weapon_equipped"]
 [connection signal="weapon_spread_changed" from="." to="PlayerUI" method="_on_player_weapon_spread_changed"]
 [connection signal="weapon_unequipped" from="." to="PlayerUI" method="_on_player_weapon_unequipped"]

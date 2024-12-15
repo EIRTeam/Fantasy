@@ -1,0 +1,4 @@
+engine_binaries_path = "/mnt/wwn-0x50026b7782b0ee9e-part1/project-fantasy/engine/bin"
+steam_branch = "staging"
+steam_account_name = "eirteam_buildbot"
+editor_path = "/mnt/wwn-0x50026b7782b0ee9e-part1/project-fantasy/engine/bin/godot.linuxbsd.editor.x86_64"

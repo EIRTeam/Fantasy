@@ -47,6 +47,7 @@ func _ready() -> void:
 	collision_shape = CollisionShape3D.new()
 	collision_shape.shape = sphere_shape
 	add_child(collision_shape)
+	HearingDebug.get_singleton().noise_event_emitted(radius, global_position)
 	if one_shot:
 		# Let it be detected for a few frames, and then die, a bit HACK-y but eh...
 		await get_tree().create_timer(0.2).timeout

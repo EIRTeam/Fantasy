@@ -5,6 +5,7 @@ class_name DamageableRigidBody
 signal damage_received(damage: float)
 
 func _ready() -> void:
+	super._ready()
 	sleeping_state_changed.connect(_on_sleeping_state_changed)
 	contact_monitor = true
 	max_contacts_reported = 4
@@ -17,11 +18,8 @@ func _on_sleeping_state_changed():
 	# No need to try to continue to store the previous velocity if we are sleeping...
 	set_physics_process(!PhysicsServer3D.body_get_state(get_rid(), PhysicsServer3D.BODY_STATE_SLEEPING))
 
-func _notify_hit_by_body(other: DamageableRigidBody, other_prev_vel: Vector3, other_current_vel: Vector3):
-	pass
-
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-	super._integrate_forces(state)
+	#super._integrate_forces(state)
 	for i in range(state.get_contact_count()):
 		var our_delta_velocity := previous_velocity.length() - linear_velocity.length()
 		

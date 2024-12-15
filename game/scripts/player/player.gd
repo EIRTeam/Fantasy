@@ -19,6 +19,8 @@ var weapon_instances: Array[WeaponInstance]
 var current_weapon_instance: WeaponInstance
 var game_time := 0.0
 
+var health := 100.0
+
 const CROUCH_HEIGHT_OFFSET := 0.0
 const BASE_HEIGHT_OFFSET := 0.6
 const ADS_HEIGHT_OFFSET := 0.15
@@ -41,8 +43,7 @@ var weapon_spread := 0.0
 signal weapon_equipped(weapon: WeaponInstance)
 signal weapon_unequipped(weapon: WeaponInstance)
 signal weapon_spread_changed(new_spread: float)
-
-
+signal health_changed(prev_health: float, new_health: float)
 
 static var current: HBPlayer:
 	get:
@@ -58,9 +59,10 @@ func update_weapon_shared_state():
 	var vp_size_2 := get_window().size * 0.5
 	weapon_shared_state.actor_aim_normal = player_camera.camera.project_ray_normal(vp_size_2)
 	weapon_shared_state.actor_aim_origin = player_camera.camera.project_ray_origin(vp_size_2)
-	weapon_shared_state.weapon_muzzle = weapon_muzzle
+	weapon_shared_state.weapon_muzzle_position = weapon_muzzle.global_position
 	weapon_shared_state.spread = weapon_spread
 	weapon_shared_state.audio_playback = audio_playback
+	weapon_shared_state.actor_hitbox = virtual_hitbox
 func _update_camera_height_offset():
 	player_camera.base_tracked_position = get_camera_tracked_position()
 	
@@ -76,7 +78,15 @@ func _on_round_fired():
 	var weapon := current_weapon_instance as WeaponInstanceFirearmBase
 	weapon_spread = min(weapon_spread + weapon.firearm_weapon_data.spread_gain_per_shot, weapon.firearm_weapon_data.max_spread)
 	weapon_spread_changed.emit(weapon_spread)
+
+func _receive_damage(damage: float):
+	var prev_health := health
+	health -= damage
+	health = max(health, 0.0)
+	health_changed.emit(prev_health, health)
+
 func _ready() -> void:
+	add_to_group(&"can_receive_damage")
 	virtual_hitbox = VirtualHitbox.new(self, $PlayerHitbox.shape)
 	(get_node("%AudioStreamPlayer3D") as AudioStreamPlayer3D).play()
 	audio_playback = (get_node("%AudioStreamPlayer3D") as AudioStreamPlayer3D).get_stream_playback()
@@ -182,6 +192,7 @@ func _physics_process(delta: float) -> void:
 			player_camera.inertialize_position()
 		
 	player_movement.advance(delta)
+	global_position = player_movement.global_position
 	
 	if player_movement.effective_velocity.length() > (STEP_NOISE_MAX_RADIUS - 0.1):
 		noise_emitter_loud.disabled = false
@@ -196,6 +207,13 @@ func _physics_process(delta: float) -> void:
 		if effective_direction.is_normalized():
 			var new_basis := Basis(Quaternion(Vector3.FORWARD, effective_direction))
 			player_graphics.global_basis = new_basis.scaled(player_graphics.global_basis.get_scale())
+			
+	if aiming:
+		var normal_planar := weapon_shared_state.actor_aim_normal
+		normal_planar.y = 0.0
+		normal_planar = normal_planar.normalized()
+		if normal_planar.normalized():
+			player_graphics.global_basis = Quaternion(Vector3.FORWARD, normal_planar)
 			
 	if current_weapon_instance:
 		if current_weapon_instance is WeaponInstanceFirearmBase:
@@ -237,16 +255,9 @@ func _physics_process(delta: float) -> void:
 		
 	global_position = player_movement.global_position
 	
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# Put this here so we don't get interpolation artifacts
 	update_weapon_shared_state()
-			
-	if aiming:
-		var normal_planar := weapon_shared_state.actor_aim_normal
-		normal_planar.y = 0.0
-		normal_planar = normal_planar.normalized()
-		if normal_planar.normalized():
-			player_graphics.global_basis = Quaternion(Vector3.FORWARD, normal_planar)
 	
 func calculate_camouflage_index() -> float:
 	var camo_index := 0.0
@@ -259,7 +270,7 @@ func calculate_camouflage_index() -> float:
 		camo_index += 0.25
 	return camo_index
 	
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed and (event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT):
 			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:

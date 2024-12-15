@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3 uid="uid://dtiauu6tfhyt5"]
+
+[ext_resource type="Script" uid="uid://lnyc534bqfw" path="res://scripts/console/ui/console_ui.gd" id="1_y1rmm"]
+[ext_resource type="Script" uid="uid://capfeqxgqkmv7" path="res://scripts/console/ui/console_input_line_edit.gd" id="2_8bvj7"]
+
+[node name="ConsoleUi" type="CanvasLayer"]
+layer = 128
+script = ExtResource("1_y1rmm")
+
+[node name="ConsoleContainer" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.4
+offset_bottom = 35.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConsoleContainer"]
+layout_mode = 2
+
+[node name="ConsoleText" type="RichTextLabel" parent="ConsoleContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ConsoleContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ConsoleInputLineEdit" type="LineEdit" parent="ConsoleContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Type something uuuu"
+clear_button_enabled = true
+deselect_on_focus_loss_enabled = false
+script = ExtResource("2_8bvj7")
+
+[node name="ToggleWindowButton" type="Button" parent="ConsoleContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "W"

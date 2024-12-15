@@ -12,12 +12,12 @@ func _init(_brain: RexbotBrain, initial_action: RexbotAction):
 func connect_action(action: RexbotAction):
 	action.brain = brain
 
-func query(query: StringName, requesting_action: RexbotAction) -> RexbotAction.QueryResponse:
+func query(query_name: StringName, requesting_action: RexbotAction) -> RexbotAction.QueryResponse:
 	for i in range(action_stack.size()-1, -1, -1):
 		var t_action := action_stack[i]
 		if requesting_action == t_action:
 			continue
-		var response := action_stack[i].respond_to_query(query)
+		var response := action_stack[i].respond_to_query(query_name)
 		if response != RexbotAction.QueryResponse.ANSWER_UNDEFINED:
 			return response
 	return RexbotAction.QueryResponse.ANSWER_UNDEFINED

@@ -10,6 +10,11 @@ var hit_normal: Vector3
 var distance := 0.0
 var time := 0.0
 
+@onready var debug := HBDebugDraw.new()
+
+func _ready() -> void:
+	get_tree().root.add_child(debug)
+	get_tree().create_timer(1.0).timeout.connect(debug.queue_free)
 func initialize(_from: Vector3, _to: Vector3, _hit_normal: Vector3, _velocity: float):
 	from = _from
 	to = _to
@@ -20,18 +25,13 @@ func initialize(_from: Vector3, _to: Vector3, _hit_normal: Vector3, _velocity: f
 	global_position = from
 	top_level = true
 	_update_rotation()
+	debug.clear()
+	var sph := SphereShape3D.new()
+	sph.radius = 0.1
+	debug.draw_shape(sph, to, Color.BLUE)
 
 func _update_rotation():
 	var base_rot := Quaternion(Vector3.UP, direction)
-	var fwd_plane := Plane(direction, global_position)
-	var camera_pos := get_viewport().get_camera_3d().global_position
-	var camera_pos_projected := fwd_plane.project(camera_pos)
-
-	#var back_target := global_position.direction_to(camera_pos_projected)
-	#if back_target.is_normalized() and not (camera_pos_projected - global_position).is_zero_approx():
-		#var back := base_rot * Vector3.BACK
-		#var final_rot := Quaternion(back, back_target) * base_rot
-		#global_basis = final_rot
 	global_basis = base_rot
 func _process(delta: float) -> void:
 	time += delta

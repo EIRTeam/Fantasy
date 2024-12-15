@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://b082xwj5wnkvt"]
+[gd_scene load_steps=16 format=3 uid="uid://b082xwj5wnkvt"]
 
 [ext_resource type="Script" uid="uid://b7xanl38c73ra" path="res://scripts/npcs/guard/npc_guard.gd" id="1_kwj6l"]
 [ext_resource type="Script" uid="uid://l2fbayo8yn05" path="res://scripts/npcs/npc_movement.gd" id="2_d72eg"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://c3sickc7d1qnt" path="res://scenes/npcs/npc_overhead_warning.tscn" id="3_d72eg"]
 [ext_resource type="Texture2D" uid="uid://d00tyvano74ae" path="res://materials/dev/arona.png" id="3_ihyei"]
 [ext_resource type="PackedScene" uid="uid://bijmturqw25pu" path="res://models/dev/npc_ak/npc_ak.gltf" id="6_6omlc"]
+[ext_resource type="PackedScene" uid="uid://c6c1ce7lx7lum" path="res://scenes/vfx/muzzle.tscn" id="7_2tjip"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_gsf6x"]
 height = 1.6
@@ -42,9 +43,12 @@ size = Vector2(1.6, 1.6)
 height = 1.0
 radius = 0.4
 
-[node name="NpcTest" type="Node3D" node_paths=PackedStringArray("nav_agent", "npc_movement")]
+[sub_resource type="AudioStreamPolyphonic" id="AudioStreamPolyphonic_2tjip"]
+
+[node name="NpcTest" type="Node3D" node_paths=PackedStringArray("audio_player", "nav_agent", "npc_movement")]
 script = ExtResource("1_kwj6l")
 npc_settings = ExtResource("2_ihyei")
+audio_player = NodePath("CharacterBody3D/AudioPlayer")
 nav_agent = NodePath("CharacterBody3D/NavigationAgent3D")
 npc_movement = NodePath("CharacterBody3D")
 
@@ -84,6 +88,14 @@ mesh = SubResource("PlaneMesh_1uybg")
 [node name="Sketchfab_Scene" parent="CharacterBody3D/PlayerGraphics" instance=ExtResource("6_6omlc")]
 transform = Transform3D(-4.37114e-10, 0, 0.01, 0, 0.01, 0, -0.01, 0, -4.37114e-10, 0.28, 0, -0.669315)
 
+[node name="Muzzle" type="Marker3D" parent="CharacterBody3D/PlayerGraphics/Sketchfab_Scene"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91.5083, 9.33153, 0)
+
+[node name="MuzzleFlash" parent="CharacterBody3D/PlayerGraphics/Sketchfab_Scene/Muzzle" instance=ExtResource("7_2tjip")]
+unique_name_in_owner = true
+transform = Transform3D(-4.37114e-06, 0, -100, 0, 100, 0, 100, 0, -4.37114e-06, 0, 0, 0)
+
 [node name="GhostBody" type="AnimatableBody3D" parent="CharacterBody3D"]
 collision_layer = 32
 collision_mask = 2
@@ -99,3 +111,6 @@ target_desired_distance = 0.6
 simplify_path = true
 simplify_epsilon = 0.1
 debug_enabled = true
+
+[node name="AudioPlayer" type="AudioStreamPlayer3D" parent="CharacterBody3D"]
+stream = SubResource("AudioStreamPolyphonic_2tjip")

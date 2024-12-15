@@ -55,7 +55,7 @@ func primary(shared: WeaponShared, press_state: WeaponPressState):
 		knife_thrown.emit()
 		charge_start_time = -1.0
 
-func secondary(shared: WeaponShared, press_state: WeaponPressState):
+func secondary(_shared: WeaponShared, press_state: WeaponPressState):
 	if press_state != WeaponPressState.JUST_PRESSED:
 		return
 	if charge_start_time != -1.0:

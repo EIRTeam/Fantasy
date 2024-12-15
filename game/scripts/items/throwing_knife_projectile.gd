@@ -55,7 +55,7 @@ func _attach_to_object(collider: Node3D):
 	collider.add_child(self)
 	top_level = false
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	linear_velocity = direction * VELOCITY
 	if global_position.distance_to(from) >= straight_flying_distance:
 		custom_integrator = false

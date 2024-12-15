@@ -1,0 +1,12 @@
+game_type = "Godot"
+steam_app_id = 3409670
+steam_depot_id = 3409671
+steam_branch = "staging"
+
+[[pcks]]
+name = "Fantasy.pck"
+export_preset_name = "Main"
+
+[[extra_files]]
+from = "{engine_binaries_path}/godot.linuxbsd.editor.x86_64"
+to = "{game_output_path}/Fantasy.x86_64"

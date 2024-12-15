@@ -33,11 +33,6 @@ func _on_animation_finished(animation: StringName):
 	else:
 		disappear_timer.start()
 
-func _input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		if event.pressed and not event.is_echo() and event.keycode == KEY_F5:
-			show_warning(OverheadWarningType.ALERT)
-
 func show_warning(warning_type: OverheadWarningType):
 	mesh_instance.set_surface_override_material(0, WARNING_MATERIALS[warning_type])
 	animation_player.play(&"appear")
