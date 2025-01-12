@@ -19,7 +19,7 @@ func _ready() -> void:
 	nav_agent.avoidance_enabled = true
 	nav_agent.radius = 1.5
 	nav_agent.debug_enabled = true
-	nav_agent.max_speed = movement.MAX_MOVE_SPEED
+	nav_agent.max_speed = movement.get_max_move_speed()
 	nav_agent.velocity_computed.connect(self._run_movement)
 	nav_agent.time_horizon_obstacles = 0.25
 	nav_agent.path_max_distance = 1.0
@@ -34,7 +34,7 @@ func _physics_process(delta: float) -> void:
 	if target_position.distance_squared_to(last_calculated_target_position) > REPATH_RADIUS_2:
 		nav_agent.target_position = target_position
 	var next_path_point := nav_agent.get_next_path_position()
-	var target_velocity := movement.MAX_MOVE_SPEED * movement.global_position.direction_to(next_path_point)
+	var target_velocity := movement.get_max_move_speed() * movement.global_position.direction_to(next_path_point)
 	nav_agent.velocity = target_velocity
 	
 	if not nav_agent.avoidance_enabled:

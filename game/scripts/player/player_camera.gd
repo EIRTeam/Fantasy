@@ -9,7 +9,7 @@ var camera_offset := Vector3.ZERO
 var base_camera_offset := Vector3.ZERO
 var camera_side := 1.0
 
-var position_inertializer: PositionInertializer
+var position_inertializer := MultiPositionInertializer.new()
 var base_tracked_position := Vector3.ZERO
 var prev_position := Vector3.ZERO
 
@@ -27,7 +27,7 @@ var camera_sensitivity := 1.0
 @onready var camera: Camera3D = get_node("%Camera3D")
 
 func calculate_camera_position() -> Vector3:
-	return global_transform * camera_offset
+	return get_global_transform_interpolated().origin * camera_offset
 
 func calculate_target_camera_offset() -> Vector3:
 	var bco := base_camera_offset
@@ -53,7 +53,8 @@ func _input(event: InputEvent) -> void:
 		camera_side *= -1.0
 		inertialize_offset()
 func inertialize_position():
-	position_inertializer = PositionInertializer.create(prev_position, global_position, base_tracked_position, 0.25, get_process_delta_time())
+	print("INERT!", prev_position, global_position, base_tracked_position)
+	position_inertializer.inertialize([prev_position], [global_position], [base_tracked_position], get_process_delta_time(), 0.5)
 
 func inertialize_fov():
 	fov_inertializer = ScalarInertializer.create(prev_camera_fov, camera.fov, target_camera_fov, 0.75, get_process_delta_time())
@@ -69,10 +70,9 @@ func _physics_process(delta: float) -> void:
 	
 	global_position = base_tracked_position
 	
-	if position_inertializer:
-		global_position = base_tracked_position + position_inertializer.advance(delta)
-		if position_inertializer.is_done():
-			position_inertializer = null
+	if not position_inertializer.is_done():
+		position_inertializer.advance(delta)
+		global_position = position_inertializer.inertialize_position(0, base_tracked_position)
 
 	if offset_inertializer:
 		camera_offset = calculate_target_camera_offset() + offset_inertializer.advance(delta)

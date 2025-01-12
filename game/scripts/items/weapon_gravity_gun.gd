@@ -134,10 +134,8 @@ func secondary(shared: WeaponShared, press_state: WeaponPressState):
 			_ungrapple()
 			next_grab_time = shared.game_time + 0.5
 		return
-	var cam := shared.actor_movement.get_viewport().get_camera_3d()
-	var viewport_size := shared.actor_movement.get_window().size
-	var ray_origin := cam.project_ray_origin(viewport_size * 0.5)
-	var ray_normal := cam.project_ray_normal(viewport_size * 0.5)
+	var ray_origin := shared.actor_aim_origin
+	var ray_normal := shared.actor_aim_normal
 	
 	var params := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_normal * GRAVITY_GUN_MAX_PULL_DISTANCE, HBPhysicsLayers.LAYER_PROPS | HBPhysicsLayers.LAYER_WORLDSPAWN)
 	var ray_result := shared.actor_movement.get_world_3d().direct_space_state.intersect_ray(params)

@@ -1,12 +1,12 @@
 [gd_scene load_steps=16 format=3 uid="uid://b082xwj5wnkvt"]
 
 [ext_resource type="Script" uid="uid://b7xanl38c73ra" path="res://scripts/npcs/guard/npc_guard.gd" id="1_kwj6l"]
-[ext_resource type="Script" uid="uid://l2fbayo8yn05" path="res://scripts/npcs/npc_movement.gd" id="2_d72eg"]
 [ext_resource type="Resource" uid="uid://bhrife33r4jy5" path="res://scripts/npcs/guard/guard_npc_settings.tres" id="2_ihyei"]
 [ext_resource type="PackedScene" uid="uid://c3sickc7d1qnt" path="res://scenes/npcs/npc_overhead_warning.tscn" id="3_d72eg"]
 [ext_resource type="Texture2D" uid="uid://d00tyvano74ae" path="res://materials/dev/arona.png" id="3_ihyei"]
 [ext_resource type="PackedScene" uid="uid://bijmturqw25pu" path="res://models/dev/npc_ak/npc_ak.gltf" id="6_6omlc"]
 [ext_resource type="PackedScene" uid="uid://c6c1ce7lx7lum" path="res://scenes/vfx/muzzle.tscn" id="7_2tjip"]
+[ext_resource type="PackedScene" uid="uid://ftwik2jflrd3" path="res://scenes/npcs/avatars/npc_test_avatar.tscn" id="7_3ri7a"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_gsf6x"]
 height = 1.6
@@ -45,72 +45,64 @@ radius = 0.4
 
 [sub_resource type="AudioStreamPolyphonic" id="AudioStreamPolyphonic_2tjip"]
 
-[node name="NpcTest" type="Node3D" node_paths=PackedStringArray("audio_player", "nav_agent", "npc_movement")]
+[node name="NpcTest" type="Node3D" node_paths=PackedStringArray("audio_player", "model")]
 script = ExtResource("1_kwj6l")
 npc_settings = ExtResource("2_ihyei")
-audio_player = NodePath("CharacterBody3D/AudioPlayer")
-nav_agent = NodePath("CharacterBody3D/NavigationAgent3D")
-npc_movement = NodePath("CharacterBody3D")
+audio_player = NodePath("AudioPlayer")
+model = NodePath("NpcTestAvatar")
 
-[node name="CharacterBody3D" type="CharacterBody3D" parent="." node_paths=PackedStringArray("standing_collision_shape", "crouching_collision_shape", "graphics_node", "ghost_physics_body")]
-collision_layer = 16
-collision_mask = 19
-script = ExtResource("2_d72eg")
-standing_collision_shape = NodePath("StandingCollisionShape")
-crouching_collision_shape = NodePath("CrouchingCollisionShape")
-graphics_node = NodePath("PlayerGraphics")
-ghost_physics_body = NodePath("GhostBody")
-
-[node name="StandingCollisionShape" type="CollisionShape3D" parent="CharacterBody3D"]
+[node name="StandingCollisionShape" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
 shape = SubResource("CylinderShape3D_gsf6x")
-debug_color = Color(0, 0.6, 0.7, 0.42)
 
-[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="CharacterBody3D"]
+[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.299672, 0)
 shape = SubResource("CylinderShape3D_vovlf")
 disabled = true
-debug_color = Color(0, 0.6, 0.7, 0.42)
 
-[node name="PlayerGraphics" type="MeshInstance3D" parent="CharacterBody3D"]
+[node name="PlayerGraphics" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
+visible = false
 mesh = SubResource("CylinderMesh_ifw1q")
+skeleton = NodePath("")
 
-[node name="OverheadWarning" parent="CharacterBody3D/PlayerGraphics" instance=ExtResource("3_d72eg")]
+[node name="OverheadWarning" parent="PlayerGraphics" instance=ExtResource("3_d72eg")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.20612, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D/PlayerGraphics"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PlayerGraphics"]
 transform = Transform3D(-1, 8.74228e-08, -3.82137e-15, 0, -4.37114e-08, -1, -8.74228e-08, -1, 4.37114e-08, 0, 0, -0.337136)
 mesh = SubResource("PlaneMesh_1uybg")
 
-[node name="Sketchfab_Scene" parent="CharacterBody3D/PlayerGraphics" instance=ExtResource("6_6omlc")]
+[node name="Sketchfab_Scene" parent="PlayerGraphics" instance=ExtResource("6_6omlc")]
 transform = Transform3D(-4.37114e-10, 0, 0.01, 0, 0.01, 0, -0.01, 0, -4.37114e-10, 0.28, 0, -0.669315)
 
-[node name="Muzzle" type="Marker3D" parent="CharacterBody3D/PlayerGraphics/Sketchfab_Scene"]
+[node name="Muzzle" type="Marker3D" parent="PlayerGraphics/Sketchfab_Scene"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91.5083, 9.33153, 0)
 
-[node name="MuzzleFlash" parent="CharacterBody3D/PlayerGraphics/Sketchfab_Scene/Muzzle" instance=ExtResource("7_2tjip")]
+[node name="MuzzleFlash" parent="PlayerGraphics/Sketchfab_Scene/Muzzle" instance=ExtResource("7_2tjip")]
 unique_name_in_owner = true
 transform = Transform3D(-4.37114e-06, 0, -100, 0, 100, 0, 100, 0, -4.37114e-06, 0, 0, 0)
 
-[node name="GhostBody" type="AnimatableBody3D" parent="CharacterBody3D"]
+[node name="GhostBody" type="AnimatableBody3D" parent="."]
 collision_layer = 32
 collision_mask = 2
 sync_to_physics = false
 
-[node name="CollisionShape3D3" type="CollisionShape3D" parent="CharacterBody3D/GhostBody"]
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="GhostBody"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 shape = SubResource("CylinderShape3D_d72eg")
-debug_color = Color(0, 0.6, 0.7, 0.42)
 
-[node name="NavigationAgent3D" type="NavigationAgent3D" parent="CharacterBody3D"]
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 target_desired_distance = 0.6
 simplify_path = true
 simplify_epsilon = 0.1
 debug_enabled = true
 
-[node name="AudioPlayer" type="AudioStreamPlayer3D" parent="CharacterBody3D"]
+[node name="AudioPlayer" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("AudioStreamPolyphonic_2tjip")
+
+[node name="NpcTestAvatar" parent="." instance=ExtResource("7_3ri7a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.781, 0)

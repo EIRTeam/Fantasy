@@ -1,0 +1,46 @@
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://c8vf3somsb47t"]
+
+[ext_resource type="FontFile" uid="uid://buh0mwkqpxmqp" path="res://fonts/FunnelDisplay-VariableFont_wght.ttf" id="1_f0fws"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_udbvf"]
+content_margin_left = 20.0
+content_margin_right = 10.0
+bg_color = Color(1, 1, 1, 0.25)
+border_width_left = 5
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lhpu2"]
+content_margin_left = 20.0
+content_margin_right = 10.0
+bg_color = Color(1, 1, 1, 0.25)
+border_width_left = 5
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f0fws"]
+content_margin_left = 20.0
+content_margin_right = 10.0
+bg_color = Color(0.8, 0.8, 0.8, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7ah4q"]
+content_margin_left = 20.0
+content_margin_right = 10.0
+draw_center = false
+corner_detail = 1
+
+[resource]
+default_font = ExtResource("1_f0fws")
+default_font_size = 25
+HBUIAlertMeter/colors/color_alert = Color(1, 0, 0, 1)
+HBUIAlertMeter/colors/color_caution = Color(1, 1, 0, 1)
+MainMenuButton/base_type = &"Button"
+MainMenuButton/colors/font_color = Color(0.5, 0.5, 0.5, 1)
+MainMenuButton/colors/font_hover_color = Color(1, 1, 1, 1)
+MainMenuButton/colors/font_outline_color = Color(0.25, 0.25, 0.25, 1)
+MainMenuButton/constants/outline_size = 5
+MainMenuButton/font_sizes/font_size = 58
+MainMenuButton/styles/focus = SubResource("StyleBoxFlat_udbvf")
+MainMenuButton/styles/hover = SubResource("StyleBoxFlat_lhpu2")
+MainMenuButton/styles/hover_pressed = SubResource("StyleBoxFlat_f0fws")
+MainMenuButton/styles/normal = SubResource("StyleBoxFlat_7ah4q")
+MainMenuButton/styles/pressed = SubResource("StyleBoxFlat_f0fws")

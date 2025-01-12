@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bihgxxyqiakc3"]
+
+[ext_resource type="Texture2D" uid="uid://dw73c1275vtkj" path="res://materials/ui/alert_meter.png" id="1_rjd2f"]
+[ext_resource type="Script" uid="uid://b0ruddhw1l6sa" path="res://scripts/ui/alert_meter.gd" id="2_w8sfi"]
+
+[node name="AlertMeter" type="TextureProgressBar"]
+offset_left = 207.0
+offset_top = 77.0
+offset_right = 463.0
+offset_bottom = 205.0
+value = 56.0
+fill_mode = 6
+texture_under = ExtResource("1_rjd2f")
+texture_progress = ExtResource("1_rjd2f")
+tint_under = Color(1, 1, 1, 0.1)
+script = ExtResource("2_w8sfi")

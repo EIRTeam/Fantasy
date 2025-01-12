@@ -1,19 +1,22 @@
-extends Node3D
+extends HBActorEntityBase
 
 class_name HBPlayer
 
-@onready var player_movement: HBPlayerMovement = get_node("%PlayerMovement")
+var player_movement: HBPlayerMovement:
+	get:
+		return movement
 @onready var player_camera: HBPlayerCameraArm = get_node("%PlayerCameraArm")
 @onready var player_graphics: Node3D = get_node("%PlayerGraphics")
 @onready var player_ghost_body: Node3D = get_node("%GhostBody")
 @onready var weapon_muzzle: Node3D = get_node("%Muzzle")
 @onready var muzzle_flash: HBMuzzleFlash = get_node("%MuzzleFlash")
+@onready var player_avatar: HBBipedModel = get_node("%PlayerAvatar")
 @onready var audio_playback: AudioStreamPlaybackPolyphonic
 
 signal camouflage_index_changed(camo_index: float)
 
-const BASE_CAMERA_OFFSET := Vector3(0.5, 0.0, 3.0)
-const ADS_CAMERA_OFFSET := Vector3(0.5, 0.0, 1.5)
+const BASE_CAMERA_OFFSET := Vector3(0.5, -0.2, 1.5)
+const ADS_CAMERA_OFFSET := Vector3(0.5, -0.2, 0.75)
 
 var weapon_instances: Array[WeaponInstance]
 var current_weapon_instance: WeaponInstance
@@ -35,7 +38,11 @@ var prev_camo_index := 0.0
 
 var graphics_rotation_inertializer: RotationInertializer
 var weapon_shared_state := WeaponInstance.WeaponShared.new()
-var aiming := false
+
+var player_animation: BipedAnimationBase:
+	get:
+		return animation
+	
 
 var virtual_hitbox: VirtualHitbox
 
@@ -52,12 +59,13 @@ static var current: HBPlayer:
 		return null
 
 func update_weapon_shared_state():
-	weapon_shared_state.actor_movement = player_movement
+	weapon_shared_state.actor_movement = self
 	weapon_shared_state.actor_look = player_camera
 	weapon_shared_state.actor_ghost_body = player_ghost_body
 	weapon_shared_state.game_time = game_time
-	var vp_size_2 := get_window().size * 0.5
+	var vp_size_2 := get_window().get_final_transform().affine_inverse() * (get_window().size * 0.5)
 	weapon_shared_state.actor_aim_normal = player_camera.camera.project_ray_normal(vp_size_2)
+	aiming_direction = player_camera.camera.project_ray_normal(vp_size_2)
 	weapon_shared_state.actor_aim_origin = player_camera.camera.project_ray_origin(vp_size_2)
 	weapon_shared_state.weapon_muzzle_position = weapon_muzzle.global_position
 	weapon_shared_state.spread = weapon_spread
@@ -85,18 +93,22 @@ func _receive_damage(damage: float):
 	health = max(health, 0.0)
 	health_changed.emit(prev_health, health)
 
+func _create_movement() -> HBBaseMovement:
+	return HBPlayerMovement.new()
+
 func _ready() -> void:
+	# Initialize movement
+	super.initialize()
 	add_to_group(&"can_receive_damage")
 	virtual_hitbox = VirtualHitbox.new(self, $PlayerHitbox.shape)
 	(get_node("%AudioStreamPlayer3D") as AudioStreamPlayer3D).play()
 	audio_playback = (get_node("%AudioStreamPlayer3D") as AudioStreamPlayer3D).get_stream_playback()
 	current = self
 	noise_emitter_loud = HBNoiseEmitter.new(STEP_NOISE_MAX_RADIUS)
-	player_movement.add_child(noise_emitter_loud)
+	add_child(noise_emitter_loud)
 	noise_emitter_loud.position = Vector3.ZERO
 	player_camera.base_camera_offset = BASE_CAMERA_OFFSET
 	_update_camera_height_offset()
-	player_movement.top_level = true
 	player_movement.movement_snapped.connect(_on_movement_snapped)
 	weapon_instances.resize(WeaponData.WeaponSlot.size())
 	var gravity_gun := WeaponInstanceGravityGun.new()
@@ -136,6 +148,8 @@ func _ready() -> void:
 		if weapon:
 			weapon.init(weapon_shared_state)
 	
+	PhysicsServer3D.body_add_collision_exception(player_ghost_body.get_rid(), player_movement.body)
+	
 	select_weapon(WeaponData.WeaponSlot.GRAVITY_GUN)
 
 func select_weapon(weapon_slot: WeaponData.WeaponSlot):
@@ -151,19 +165,18 @@ func select_weapon(weapon_slot: WeaponData.WeaponSlot):
 			weapon_spread_changed.emit(weapon_spread)
 	
 func get_camera_tracked_position() -> Vector3:
-	return player_movement.global_position + Vector3(0.0, locomotion_camera_height_offset + aim_height_offset, 0.0)
+	return global_position + Vector3(0.0, locomotion_camera_height_offset + aim_height_offset, 0.0)
 	
 func _on_movement_snapped():
+	var should_inertialize: bool = abs(player_camera.base_tracked_position.y - get_camera_tracked_position().y) > HBBaseMovement.MAX_STEP_HEIGHT * 0.25
 	_update_camera_height_offset()
-	player_camera.inertialize_position()
+	DebugOverlay.sphere(global_position, 0.5, Color.BLACK, false, 0.1)
+	if should_inertialize:
+		player_camera.inertialize_position()
+
+
 
 func _physics_process(delta: float) -> void:
-	#var point_cast := PhysicsPointQueryParameters3D.new()
-	#point_cast.position = player_movement.global_position
-	#point_cast.collision_mask = HBPhysicsLayers.LAYER_ENTITY_HITBOXES
-	#var dss := get_world_3d().direct_space_state
-	#print(dss.intersect_point(point_cast))
-	
 	if Input.is_action_just_pressed(&"aim"):
 		aiming = true
 		player_camera.base_camera_offset = ADS_CAMERA_OFFSET
@@ -171,6 +184,7 @@ func _physics_process(delta: float) -> void:
 		_update_camera_height_offset()
 		player_camera.inertialize_offset()
 		player_camera.inertialize_position()
+		_update_animation_states()
 	elif Input.is_action_just_released(&"aim"):
 		aiming = false
 		player_camera.base_camera_offset = BASE_CAMERA_OFFSET
@@ -178,21 +192,23 @@ func _physics_process(delta: float) -> void:
 		_update_camera_height_offset()
 		player_camera.inertialize_offset()
 		player_camera.inertialize_position()
+		_update_animation_states()
 	if Input.is_action_just_pressed("crouch_toggle"):
 		var new_height_offset := locomotion_camera_height_offset
-		if player_movement.stance == HBPlayerMovement.Stance.CROUCHING:
+		if player_movement.current_stance_idx == HBPlayerMovement.Stance.CROUCHING:
 			if player_movement.try_change_stance(HBPlayerMovement.Stance.STANDING):
 				new_height_offset = BASE_HEIGHT_OFFSET
+				_update_animation_states()
 		else:
 			if player_movement.try_change_stance(HBPlayerMovement.Stance.CROUCHING):
 				new_height_offset = CROUCH_HEIGHT_OFFSET
+				_update_animation_states()
 		if new_height_offset != locomotion_camera_height_offset:
 			locomotion_camera_height_offset = new_height_offset
 			_update_camera_height_offset()
 			player_camera.inertialize_position()
-		
-	player_movement.advance(delta)
-	global_position = player_movement.global_position
+	
+	super.advance(delta)
 	
 	if player_movement.effective_velocity.length() > (STEP_NOISE_MAX_RADIUS - 0.1):
 		noise_emitter_loud.disabled = false
@@ -207,13 +223,6 @@ func _physics_process(delta: float) -> void:
 		if effective_direction.is_normalized():
 			var new_basis := Basis(Quaternion(Vector3.FORWARD, effective_direction))
 			player_graphics.global_basis = new_basis.scaled(player_graphics.global_basis.get_scale())
-			
-	if aiming:
-		var normal_planar := weapon_shared_state.actor_aim_normal
-		normal_planar.y = 0.0
-		normal_planar = normal_planar.normalized()
-		if normal_planar.normalized():
-			player_graphics.global_basis = Quaternion(Vector3.FORWARD, normal_planar)
 			
 	if current_weapon_instance:
 		if current_weapon_instance is WeaponInstanceFirearmBase:
@@ -251,10 +260,11 @@ func _physics_process(delta: float) -> void:
 		prev_camo_index = new_camo_index
 		camouflage_index_changed.emit(new_camo_index)
 		
-	virtual_hitbox.update(player_movement.global_position)
+	virtual_hitbox.update(global_position)
 		
-	global_position = player_movement.global_position
+	global_position = global_position
 	
+	DebugOverlay.sphere(global_position, 0.5, Color.BLUE, false, 0.1)
 func _process(_delta: float) -> void:
 	# Put this here so we don't get interpolation artifacts
 	update_weapon_shared_state()
@@ -266,7 +276,7 @@ func calculate_camouflage_index() -> float:
 		camo_index += 0.25
 	elif desired_vel < player_movement.get_max_move_speed() - 0.1:
 		camo_index += 0.15
-	if player_movement.stance == HBPlayerMovement.Stance.CROUCHING:
+	if player_movement.current_stance_idx == HBPlayerMovement.Stance.CROUCHING:
 		camo_index += 0.25
 	return camo_index
 	

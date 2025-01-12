@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_fvbok")
 movement_speed = 3.0
-movement_speed_patrol = 2.0
+movement_speed_patrol = 1.0
 vision_range = 20.0
 vision_fov = 1.13446
 base_health = 100.0

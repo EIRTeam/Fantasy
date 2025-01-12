@@ -25,7 +25,7 @@ func tick(delta: float) -> RexbotActionResult:
 	if time >= START_MOVING_TIME:
 		if not navigating:
 			navigating = true
-			npc.navigation.begin_navigating_to(noise_position, npc.npc_movement.MAX_MOVE_SPEED)
+			npc.navigation.begin_navigating_to(noise_position, npc.npc_settings.movement_speed)
 			return r_continue()
 	else:
 		return r_continue()

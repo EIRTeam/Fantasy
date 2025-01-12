@@ -16,9 +16,18 @@ run/main_loop_type="HBGameMainLoop"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/tbloader/plugin.cfg")
+enabled=PackedStringArray("res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/tbloader/plugin.cfg", "res://addons/vrm/plugin.cfg")
 
 [fantasy]
 
@@ -29,6 +38,11 @@ hearing_debug=true
 
 can_receive_damage=""
 pickupable=""
+
+[gui]
+
+theme/custom="uid://c8vf3somsb47t"
+theme/default_font_generate_mipmaps=true
 
 [importer_defaults]
 

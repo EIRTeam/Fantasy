@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HBMovementSettings" load_steps=2 format=3 uid="uid://c1lj21r43jv71"]
+
+[ext_resource type="Script" uid="uid://cjiv4oq6gl1kl" path="res://scripts/movement_settings.gd" id="1_0n7oy"]
+
+[resource]
+script = ExtResource("1_0n7oy")
+stance_heights = Array[float]([1.6, 1.0])
+walk_movement_speed = 1.0
+max_movement_speed = 3.0
+radius = 0.3
+metadata/_custom_type_script = ExtResource("1_0n7oy")

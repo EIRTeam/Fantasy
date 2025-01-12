@@ -9,7 +9,7 @@ func get_input() -> Vector3:
 	return Vector3(vec_2d.x, 0.0, vec_2d.y)
 
 func get_input_transformed() -> Vector3:
-	var camera_3d := get_viewport().get_camera_3d()
+	var camera_3d := owner_node.get_viewport().get_camera_3d()
 	var desired_input := get_input()
 	var desired_iput_length := desired_input.length()
 	var transformed_input := camera_3d.get_camera_transform().basis * desired_input

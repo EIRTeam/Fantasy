@@ -1,0 +1,70 @@
+[gd_scene load_steps=3 format=3 uid="uid://bgse8hgelwubg"]
+
+[ext_resource type="Texture2D" uid="uid://du0w6a6ihrl5c" path="res://materials/ui/proto_bg.jpg" id="1_kx65a"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_flk2s"]
+font_size = 136
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_kx65a")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+ratio = 1.7778
+
+[node name="MarginContainer" type="MarginContainer" parent="AspectRatioContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 50
+
+[node name="HBoxContainer" type="HBoxContainer" parent="AspectRatioContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="VBoxContainer" parent="AspectRatioContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="AspectRatioContainer/MarginContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Project Fantasy"
+label_settings = SubResource("LabelSettings_flk2s")
+
+[node name="Button" type="Button" parent="AspectRatioContainer/MarginContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme_type_variation = &"MainMenuButton"
+text = "#UIMainMenu_Play"
+alignment = 0
+
+[node name="Button2" type="Button" parent="AspectRatioContainer/MarginContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme_type_variation = &"MainMenuButton"
+text = "#UIMainMenu_Options"
+alignment = 0
+
+[node name="Button3" type="Button" parent="AspectRatioContainer/MarginContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme_type_variation = &"MainMenuButton"
+text = "#UIMainMenu_Exit"
+alignment = 0

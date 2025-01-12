@@ -10,7 +10,7 @@ const LOOK_STAGE_DURATION := 3.0
 
 func enter() -> RexbotActionResult:
 	# Look back
-	npc.aiming.aim_at_position(npc.npc_movement.global_position - npc.get_forward() * 1000.0, LOOK_STAGE_DURATION)
+	npc.npc_aiming.aim_at_position(npc.global_position - npc.get_forward() * 1000.0, LOOK_STAGE_DURATION)
 	next_look_around_time = time + LOOK_STAGE_DURATION
 	return r_continue()
 
@@ -20,7 +20,7 @@ func tick(delta: float) -> RexbotActionResult:
 		look_around_counter += 1
 		# One more round
 		if look_around_counter == 1:
-			npc.aiming.aim_at_position(npc.npc_movement.global_position - npc.get_forward() * 1000.0, LOOK_STAGE_DURATION)
+			npc.npc_aiming.aim_at_position(npc.global_position - npc.get_forward() * 1000.0, LOOK_STAGE_DURATION)
 			next_look_around_time = time + LOOK_STAGE_DURATION
 		else:
 			debug_npc_talk("Must have been my imagination...")

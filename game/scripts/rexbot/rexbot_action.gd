@@ -45,5 +45,5 @@ func r_change_to(action: RexbotAction) -> RexbotActionResult:
 	suspend_for.action = action
 	return suspend_for
 	
-func tick(_time: float) -> RexbotActionResult:
+func tick(_game_time: float) -> RexbotActionResult:
 	return r_done()

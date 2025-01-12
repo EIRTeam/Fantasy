@@ -51,6 +51,13 @@ func print_help():
 			"cvar_name": cvar.cvar_name,
 			"cvar_help": cvar.help_text
 		}))
+		if cvar.property_hint & PROPERTY_HINT_ENUM:
+			var enum_hints := cvar.property_hint_text.split(",")
+			for i in range(enum_hints.size()):
+				lines.push_back("\t\t{enum_hint_name} = {enum_hint_value}".format({
+					"enum_hint_name": enum_hints[i],
+					"enum_hint_value": i
+				}))
 	print_message.emit("\n".join(lines))
 
 func _print_cvar_value(cvar: CVar):

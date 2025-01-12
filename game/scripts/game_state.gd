@@ -6,9 +6,11 @@ class_name GameState
 
 enum AlertState {
 	CLEAR,
-	CAUTION,
-	ALERT
+	ALERT,
+	COMBAT,
+	EVASION
 }
 
 @export var alert_state := AlertState.CLEAR
+@export var alert_time_remaining := 0.0
 @export var game_time := 0.0

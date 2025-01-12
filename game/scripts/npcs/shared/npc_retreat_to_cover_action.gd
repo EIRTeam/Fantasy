@@ -6,7 +6,7 @@ func _init(_cover_transform: Transform3D) -> void:
 	cover_transform = _cover_transform
 
 func enter() -> RexbotActionResult:
-	npc.navigation.begin_navigating_to(cover_transform.origin, npc.npc_movement.MAX_MOVE_SPEED)
+	npc.navigation.begin_navigating_to(cover_transform.origin, npc.npc_settings.movement_speed)
 	return r_continue()
 
 func tick(_delta: float) -> RexbotActionResult:

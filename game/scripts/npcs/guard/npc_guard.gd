@@ -1,4 +1,3 @@
-@tool
 extends NPCBase
 
 class_name NPCGuard
@@ -6,10 +5,10 @@ class_name NPCGuard
 var brain: RexbotBrain
 @onready var overhead_warning: NPCOverheadWarning = %OverheadWarning
 
-## How long the player has been in sight
 var player_in_sight_duration := 0.0
 
-static var instant_alert_closeness_cvar := CVar.create(&"guard_instant_alert_distance", TYPE_FLOAT, 3.0, "If closer than this distance, trigger an instant alert")
+func notify_alert_meter_changed():
+	pass
 
 func _init() -> void:
 	npc_settings = preload("res://scripts/npcs/guard/guard_npc_settings.tres")
@@ -27,10 +26,9 @@ func _ready() -> void:
 	brain = RexbotBrain.new()
 	brain.actor = self
 	brain.intentions.push_back(RexbotIntention.new(brain, NPCGuardMainAction.new()))
-	
 
 func _physics_process(delta: float) -> void:
-	update_vision()
+	update_vision(delta)
 	var saw_player := false
 	for entity in vision.visible_entities:
 		if entity is HBPlayer:

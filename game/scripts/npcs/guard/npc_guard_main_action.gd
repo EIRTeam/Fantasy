@@ -13,16 +13,10 @@ func unsuspend() -> RexbotActionResult:
 	return r_continue()
 
 func tick(_delta: float) -> RexbotActionResult:
-	if are_we_in_alert():
+	if are_we_dead():
+		return r_done()
+	if are_we_in_combat():
 		return r_suspend_for(NPCGuardCombatMain.new())
-	if can_see_player():
-		var distance_to_player := HBPlayer.current.global_position.distance_to(npc.global_position)
-		print("SPOTT!!!")
-		if distance_to_player < NPCGuard.instant_alert_closeness_cvar.get_float():
-			print("SPOTT2!!!")
-			return r_suspend_for(NPCGuardCombatMain.new(true))
-		GameWorld.get_singleton().notify_player_spotted(HBPlayer.current.player_movement.global_position)
-		return r_suspend_for(NPCGuardInvestigatePlayerAction.new(HBPlayer.current))
 	if npc.hearing.heard_points.size() > 0:
 		return r_suspend_for(NPCInvestigateNoiseAction.new(npc.hearing.heard_points[0]))
 	if has_patrol_route() and NavigationServer3D.map_get_iteration_id(npc.get_world_3d().navigation_map) != 0:
@@ -35,16 +29,21 @@ func can_see_player() -> bool:
 			return true
 	return false
 
-func are_we_in_alert() -> bool:
-	return GameWorld.get_singleton().state.alert_state == GameState.AlertState.ALERT
+func are_we_in_combat() -> bool:
+	return GameWorld.get_singleton().state.alert_state == GameState.AlertState.COMBAT
+
+func are_we_in_evasion() -> bool:
+	return GameWorld.get_singleton().state.alert_state == GameState.AlertState.EVASION
 
 func are_we_dead() -> bool:
 	return npc.health <= 0.0
 
 func respond_to_query(query: StringName) -> QueryResponse:
 	match query:
-		&"are_we_in_alert":
-			return QueryResponse.ANSWER_YES if are_we_in_alert() else QueryResponse.ANSWER_NO
+		&"are_we_in_evasion":
+			return QueryResponse.ANSWER_YES if are_we_in_evasion() else QueryResponse.ANSWER_NO
+		&"are_we_in_combat":
+			return QueryResponse.ANSWER_YES if are_we_in_combat() else QueryResponse.ANSWER_NO
 		&"are_we_dead":
 			return QueryResponse.ANSWER_YES if are_we_dead() else QueryResponse.ANSWER_NO
 		&"did_we_hear_anything_suspicious":

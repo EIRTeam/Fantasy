@@ -20,6 +20,8 @@ var overlays: Array[Overlay]
 
 @onready var _sphere_mesh: Mesh
 @onready var _cylinder_mesh: Mesh
+@onready var _circle_mesh: Mesh
+@onready var _circle_mesh_solid: Mesh
 var _debug_overlay_material: ShaderMaterial
 var _debug_overlay_material_point: ShaderMaterial
 
@@ -33,13 +35,36 @@ func _ready() -> void:
 	sph.radius = 1.0
 	_sphere_mesh = sph.get_debug_mesh()
 	
-	
 	_debug_overlay_material = ShaderMaterial.new()
 	_debug_overlay_material.shader = preload("res://scripts/debug_overlay/debug_overlay_shader.gdshader")
 	_debug_overlay_material_point = ShaderMaterial.new()
 	_debug_overlay_material_point.shader = preload("res://scripts/debug_overlay/debug_overlay_shader_point.gdshader")
 	name = "DebugOverlay"
 	
+	# Generate circle meshes
+	const CIRCLE_MESH_RESOLUTION := 64
+	var circle_mesh_im := ImmediateMesh.new()
+	var circle_mesh_im_solid := ImmediateMesh.new()
+	circle_mesh_im_solid.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+	circle_mesh_im.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+	for i in range(CIRCLE_MESH_RESOLUTION):
+		var progress := i / float(CIRCLE_MESH_RESOLUTION)
+		var progress_next := (i+1) / float(CIRCLE_MESH_RESOLUTION)
+		var pos := Vector3.RIGHT.rotated(Vector3.UP, progress * TAU)
+		var pos_next := Vector3.RIGHT.rotated(Vector3.UP, progress_next * TAU)
+		circle_mesh_im_solid.surface_add_vertex(Vector3.ZERO)
+		circle_mesh_im_solid.surface_add_vertex(pos_next)
+		circle_mesh_im_solid.surface_add_vertex(pos)
+		
+		if i == 0:
+			circle_mesh_im.surface_add_vertex(pos)
+		circle_mesh_im.surface_add_vertex(pos_next)
+		
+	circle_mesh_im_solid.surface_end()
+	circle_mesh_im.surface_end()
+	
+	_circle_mesh = circle_mesh_im
+	_circle_mesh_solid = circle_mesh_im_solid
 
 func advance():
 	for i in range(overlays.size()-1, -1, -1):
@@ -201,4 +226,21 @@ static func cone_angle(from: Vector3, to: Vector3, angle: float, color: Color, d
 	color.a = 1.0
 	var mi := _create_mesh_instance(im, color, true)
 	overlay.nodes.push_back(mi)
+	singleton._register_overlay(overlay)
+
+static func horz_circle(at: Vector3, radius: float, color: Color, depth_test := true, duration := 0.0):
+	var overlay := Overlay.new(duration)
+	if color.a > 0.0:
+		var mesh_solid := _create_mesh_instance(singleton._circle_mesh_solid, color, depth_test)
+		mesh_solid.position = at
+		mesh_solid.scale = Vector3.ONE * radius
+		overlay.nodes.push_back(mesh_solid)
+		
+	color.a = 1.0
+	var mesh := _create_mesh_instance(singleton._circle_mesh, color, depth_test)
+	
+	mesh.position = at
+	mesh.scale = Vector3.ONE * radius
+	
+	overlay.nodes.push_back(mesh)
 	singleton._register_overlay(overlay)

@@ -1,7 +1,6 @@
 [gd_scene load_steps=20 format=3 uid="uid://dtwnrl01xhx6s"]
 
 [ext_resource type="Script" uid="uid://gtiwnxusvmup" path="res://scripts/player/player.gd" id="1_p47bc"]
-[ext_resource type="Script" uid="uid://3kbhygfnb480" path="res://scripts/player/player_movement.gd" id="2_75vfm"]
 [ext_resource type="Script" uid="uid://d4niaukgkc04v" path="res://scripts/player/player_camera.gd" id="3_0owmy"]
 [ext_resource type="Texture2D" uid="uid://d00tyvano74ae" path="res://materials/dev/arona.png" id="4_qek5x"]
 [ext_resource type="Script" uid="uid://cqtrqdrsj5tjr" path="res://scripts/debug_draw.gd" id="5_5gtgg"]
@@ -9,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://c6c1ce7lx7lum" path="res://scenes/vfx/muzzle.tscn" id="6_5gtgg"]
 [ext_resource type="Script" uid="uid://5xhlwder3lyo" path="res://scripts/ui/player_ui.gd" id="6_75vfm"]
 [ext_resource type="Script" uid="uid://c4h7oxn5mw3bo" path="res://scripts/ui/crosshair.gd" id="7_0owmy"]
+[ext_resource type="PackedScene" uid="uid://ftwik2jflrd3" path="res://scenes/npcs/avatars/npc_test_avatar.tscn" id="7_h17s1"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_utdxe"]
 height = 1.6
@@ -53,84 +53,76 @@ radius = 0.4
 height = 1.6
 radius = 0.3
 
-[node name="Node3D3" type="Node3D"]
+[node name="Node3D3" type="Node3D" node_paths=PackedStringArray("model")]
 script = ExtResource("1_p47bc")
+model = NodePath("PlayerAvatar")
 
-[node name="PlayerMovement" type="CharacterBody3D" parent="." node_paths=PackedStringArray("standing_collision_shape", "crouching_collision_shape", "graphics_node", "ghost_physics_body")]
-unique_name_in_owner = true
-collision_layer = 16
-collision_mask = 19
-script = ExtResource("2_75vfm")
-standing_collision_shape = NodePath("StandingCollisionShape")
-crouching_collision_shape = NodePath("CrouchingCollisionShape")
-graphics_node = NodePath("PlayerGraphics")
-ghost_physics_body = NodePath("GhostBody")
+[node name="Node3D" type="Node3D" parent="."]
 
-[node name="Node3D" type="Node3D" parent="PlayerMovement"]
+[node name="Node3D2" type="Node3D" parent="."]
 
-[node name="Node3D2" type="Node3D" parent="PlayerMovement"]
-
-[node name="StandingCollisionShape" type="CollisionShape3D" parent="PlayerMovement"]
+[node name="StandingCollisionShape" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
 shape = SubResource("CylinderShape3D_utdxe")
-debug_color = Color(0, 0.6, 0.7, 0.42)
 
-[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="PlayerMovement"]
+[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.299672, 0)
 shape = SubResource("CylinderShape3D_p47bc")
 disabled = true
-debug_color = Color(0, 0.6, 0.7, 0.42)
 
-[node name="PlayerCameraArm" type="Node3D" parent="PlayerMovement"]
+[node name="PlayerCameraArm" type="Node3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.401602, 0)
 script = ExtResource("3_0owmy")
 
-[node name="Camera3D" type="Camera3D" parent="PlayerMovement/PlayerCameraArm"]
+[node name="Camera3D" type="Camera3D" parent="PlayerCameraArm"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, 3)
 current = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="PlayerMovement/PlayerCameraArm"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PlayerCameraArm"]
 visible = false
 mesh = SubResource("SphereMesh_p47bc")
 
-[node name="PlayerGraphics" type="MeshInstance3D" parent="PlayerMovement"]
+[node name="PlayerGraphics" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
+transparency = 1.0
 mesh = SubResource("CylinderMesh_o5e40")
+skeleton = NodePath("")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="PlayerMovement/PlayerGraphics"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PlayerGraphics"]
 transform = Transform3D(-1, 8.74228e-08, -3.82137e-15, 0, -4.37114e-08, -1, -8.74228e-08, -1, 4.37114e-08, 0, 0, -0.337136)
+visible = false
 mesh = SubResource("PlaneMesh_22kw3")
 
-[node name="Sketchfab_Scene" parent="PlayerMovement/PlayerGraphics" instance=ExtResource("5_qek5x")]
+[node name="Sketchfab_Scene" parent="PlayerGraphics" instance=ExtResource("5_qek5x")]
 transform = Transform3D(-4.37114e-10, 0, 0.01, 0, 0.01, 0, -0.01, 0, -4.37114e-10, 0.28, 0, -0.669315)
 
-[node name="Muzzle" type="Marker3D" parent="PlayerMovement/PlayerGraphics/Sketchfab_Scene"]
+[node name="Muzzle" type="Marker3D" parent="PlayerGraphics/Sketchfab_Scene"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91.5083, 9.33153, 0)
 
-[node name="MuzzleFlash" parent="PlayerMovement/PlayerGraphics/Sketchfab_Scene/Muzzle" instance=ExtResource("6_5gtgg")]
+[node name="MuzzleFlash" parent="PlayerGraphics/Sketchfab_Scene/Muzzle" instance=ExtResource("6_5gtgg")]
 unique_name_in_owner = true
 transform = Transform3D(-4.37114e-06, 0, -100, 0, 100, 0, 100, 0, -4.37114e-06, 0, 0, 0)
 
-[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="PlayerMovement/PlayerGraphics"]
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="PlayerGraphics"]
 unique_name_in_owner = true
 stream = SubResource("AudioStreamPolyphonic_5gtgg")
 
-[node name="GhostBody" type="AnimatableBody3D" parent="PlayerMovement"]
+[node name="GhostBody" type="AnimatableBody3D" parent="."]
 unique_name_in_owner = true
-collision_layer = 32
-collision_mask = 2
+collision_layer = 0
+collision_mask = 0
 sync_to_physics = false
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="PlayerMovement/GhostBody"]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="GhostBody"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 shape = SubResource("CylinderShape3D_6ks2j")
 debug_color = Color(0.952314, 3.7542e-06, 0.559264, 0.42)
 
-[node name="HBDebugDraw" type="Node3D" parent="PlayerMovement"]
+[node name="HBDebugDraw" type="Node3D" parent="."]
 script = ExtResource("5_5gtgg")
 metadata/_custom_type_script = ExtResource("5_5gtgg")
 
@@ -179,10 +171,24 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(1, 0, 0, 1)
 
+[node name="AlertMetersContainer" type="Control" parent="PlayerUI"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
 [node name="PlayerHitbox" type="CollisionShape3D" parent="."]
 visible = false
 shape = SubResource("CylinderShape3D_5gtgg")
 debug_color = Color(0.95171, 0.185773, 0.310269, 0.42)
+
+[node name="PlayerAvatar" parent="." instance=ExtResource("7_h17s1")]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.780654, 0)
 
 [connection signal="camouflage_index_changed" from="." to="PlayerUI" method="update_camo_index"]
 [connection signal="health_changed" from="." to="PlayerUI" method="_on_player_health_changed"]

@@ -18,3 +18,10 @@ func are_we_dead() -> bool:
 	var are_we_dead_query_result := request_query(&"are_we_dead")
 	return are_we_dead_query_result == QueryResponse.ANSWER_YES
 	
+func are_we_in_combat() -> bool:
+	var are_we_in_combat_query_result := request_query(&"are_we_in_combat")
+	return are_we_in_combat_query_result == QueryResponse.ANSWER_YES
+
+func are_we_in_evasion() -> bool:
+	var are_we_in_evasion_query_result := request_query(&"are_we_in_evasion")
+	return are_we_in_evasion_query_result == QueryResponse.ANSWER_YES
